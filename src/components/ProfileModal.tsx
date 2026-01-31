@@ -1,0 +1,325 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Building2, Calendar, GraduationCap, MapPin, Phone, Sparkles, User, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { UNIVERSITY_ACADEMICS } from '../lib/constants';
+
+const trim = (value: string) => value.trim();
+
+interface ProfileModalProps {
+    isEditMode?: boolean;
+    onClose?: () => void;
+}
+
+export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps = {}) {
+    const {
+        user,
+        profile,
+        profileLoading,
+        profileComplete,
+        saveProfile,
+        consumePendingRedirect,
+    } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const [fullName, setFullName] = useState(() => profile?.fullName || user?.name || user?.email || '');
+    const [college, setCollege] = useState(() => profile?.college ?? '');
+    const [university, setUniversity] = useState(() => profile?.university ?? '');
+    const [programme, setProgramme] = useState(() => profile?.programme ?? '');
+    const [graduationYear, setGraduationYear] = useState('');
+    const [phone, setPhone] = useState('');
+    const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const academicData = useMemo(() => UNIVERSITY_ACADEMICS, []);
+
+    const universities = useMemo(() => Object.keys(academicData), [academicData]);
+
+    const availableColleges = useMemo(() => {
+        if (!university) return [];
+        const entry = academicData[university as keyof typeof academicData];
+        if (!entry) return [];
+        const options = Object.keys(entry.colleges);
+        return college && !options.includes(college) ? [...options, college] : options;
+    }, [academicData, university, college]);
+
+    const availableProgrammes = useMemo(() => {
+        if (!university || !college) return [];
+        const entry = academicData[university as keyof typeof academicData];
+        const programmes = entry?.colleges?.[college as keyof typeof entry.colleges] ?? [];
+        const list = Array.from(programmes);
+        return programme && !list.includes(programme) ? [...list, programme] : list;
+    }, [academicData, university, college, programme]);
+
+    const shouldShowModal = useMemo(
+        () => isEditMode || Boolean(user && !profileLoading && !profileComplete),
+        [user, profileLoading, profileComplete, isEditMode]
+    );
+
+    useEffect(() => {
+        if (profile?.fullName) {
+            setFullName(profile.fullName);
+        } else if (!profileLoading && (user?.name || user?.email)) {
+            setFullName((prev) => (trim(prev) ? prev : user?.name || user?.email || ''));
+        }
+
+        if (profile) {
+            setCollege(profile.college ?? '');
+            setUniversity(profile.university ?? '');
+            setProgramme(profile.programme ?? '');
+            setGraduationYear(profile.graduationYear ?? '');
+            setPhone(profile.phone ?? '');
+        }
+    }, [profile, profileLoading, user]);
+
+    useEffect(() => {
+        if (!university) {
+            setCollege('');
+            setProgramme('');
+            return;
+        }
+
+        const entry = academicData[university as keyof typeof academicData];
+        if (!entry) {
+            setCollege('');
+            setProgramme('');
+            return;
+        }
+
+        const collegeOptions = Object.keys(entry.colleges);
+        if (college && !collegeOptions.includes(college)) {
+            setCollege('');
+            setProgramme('');
+        }
+    }, [academicData, university, college]);
+
+    useEffect(() => {
+        if (!university || !college) {
+            setProgramme('');
+            return;
+        }
+
+        const entry = academicData[university as keyof typeof academicData];
+        const programmes = entry?.colleges?.[college as keyof typeof entry.colleges] ?? [];
+
+        if (programme && !programmes.includes(programme)) {
+            setProgramme('');
+        }
+    }, [academicData, university, college, programme]);
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setError('');
+
+        const requiredFields = [fullName, university, college, programme, graduationYear];
+        const hasEmptyField = requiredFields.some((value) => trim(value) === '');
+
+        if (hasEmptyField) {
+            setError('Please complete all required fields before continuing.');
+            return;
+        }
+
+        setSubmitting(true);
+        const { error } = await saveProfile({
+            fullName: trim(fullName),
+            college: trim(college),
+            university: trim(university),
+            programme: trim(programme),
+            graduationYear: trim(graduationYear),
+            phone: trim(phone) || null,
+            onboardingComplete: true,
+        });
+
+        if (error) {
+            setError(error.message ?? 'Unable to save your profile. Please try again.');
+            setSubmitting(false);
+            return;
+        }
+
+        if (isEditMode && onClose) {
+            setSubmitting(false);
+            onClose();
+            return;
+        }
+
+        const target = consumePendingRedirect() ?? (location.pathname.includes('/admin') ? '/admin' : '/dashboard');
+        setSubmitting(false);
+        navigate(target, { replace: true });
+    };
+
+    return (
+        <AnimatePresence>
+            {shouldShowModal && (
+                <motion.div
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="relative w-full max-w-2xl rounded-2xl border border-gold-500/30 bg-gray-900/95 p-8 shadow-2xl"
+                    >
+                        {isEditMode && onClose && (
+                            <button
+                                onClick={onClose}
+                                className="absolute right-6 top-6 rounded-full bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        )}
+
+                        <div className="mb-6 flex items-start gap-4">
+                            <div className="rounded-xl bg-gold-500/15 p-3 text-gold-400">
+                                <Sparkles className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-display font-semibold text-white">
+                                    {isEditMode ? 'Edit Your Profile' : 'Complete Your Profile'}
+                                </h2>
+                                <p className="mt-2 text-sm text-gray-300">
+                                    {isEditMode
+                                        ? 'Update your personal and academic information below.'
+                                        : 'We need a little more information to personalize your stole experience and keep our team aligned with your graduation journey.'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-300">Full Name</label>
+                                <div className="relative">
+                                    <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                    <input
+                                        value={fullName}
+                                        onChange={(event) => setFullName(event.target.value)}
+                                        className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        placeholder="Ama Mensah"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-300">University</label>
+                                    <div className="relative">
+                                        <MapPin className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <select
+                                            value={university}
+                                            onChange={(event) => {
+                                                setUniversity(event.target.value);
+                                                setCollege('');
+                                                setProgramme('');
+                                            }}
+                                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        >
+                                            <option value="" disabled>
+                                                Select university
+                                            </option>
+                                            {universities.map((option) => (
+                                                <option key={option} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-300">College</label>
+                                    <div className="relative">
+                                        <Building2 className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <select
+                                            value={college}
+                                            onChange={(event) => {
+                                                setCollege(event.target.value);
+                                                setProgramme('');
+                                            }}
+                                            disabled={!university}
+                                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white disabled:cursor-not-allowed disabled:opacity-50 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        >
+                                            <option value="" disabled>
+                                                {university ? 'Select college' : 'Choose university first'}
+                                            </option>
+                                            {availableColleges.map((option) => (
+                                                <option key={option} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-300">Programme</label>
+                                    <div className="relative">
+                                        <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <select
+                                            value={programme}
+                                            onChange={(event) => setProgramme(event.target.value)}
+                                            disabled={!college}
+                                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white disabled:cursor-not-allowed disabled:opacity-50 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        >
+                                            <option value="" disabled>
+                                                {college ? 'Select programme' : 'Choose college first'}
+                                            </option>
+                                            {availableProgrammes.map((option) => (
+                                                <option key={option} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-300">Graduation Year</label>
+                                    <div className="relative">
+                                        <Calendar className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <input
+                                            value={graduationYear}
+                                            onChange={(event) => setGraduationYear(event.target.value)}
+                                            className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                            placeholder="2026"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-300">Contact Phone (optional)</label>
+                                <div className="relative">
+                                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                    <input
+                                        value={phone}
+                                        onChange={(event) => setPhone(event.target.value)}
+                                        className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        placeholder="+233 123 456 789"
+                                    />
+                                </div>
+                            </div>
+
+                            {error && <p className="text-sm text-red-400">{error}</p>}
+
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                className="w-full rounded-lg bg-gradient-to-r from-gold-500 to-gold-600 py-3 text-center text-sm font-semibold text-black transition-all hover:from-gold-400 hover:to-gold-500 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {submitting ? 'Saving profile...' : (isEditMode ? 'Update Profile' : 'Save and Continue')}
+                            </button>
+                        </form>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
