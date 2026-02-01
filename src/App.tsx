@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -35,7 +36,7 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-app-base text-text-primary transition-colors duration-500">
       <Navbar />
       <PageWrapper>
         <Routes>
@@ -80,9 +81,11 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

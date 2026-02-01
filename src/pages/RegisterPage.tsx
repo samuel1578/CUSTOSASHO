@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export function RegisterPage() {
@@ -43,105 +43,105 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-section-gradient px-4 py-12 transition-colors">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-md w-full"
+        className="w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 mb-6 group">
-            <Sparkles className="h-10 w-10 text-gold-500 group-hover:text-gold-400 transition-colors" />
-            <span className="text-3xl font-display font-bold text-white group-hover:text-gold-400 transition-colors">
+        <div className="mb-8 text-center">
+          <Link to="/" className="group mb-6 inline-flex items-center space-x-2">
+            <Sparkles className="h-10 w-10 text-accent-primary transition-colors group-hover:text-accent-secondary" />
+            <span className="text-3xl font-display font-bold text-text-primary transition-colors group-hover:text-accent-primary">
               CustoSasho
             </span>
           </Link>
-          <h2 className="text-3xl font-display font-bold text-white mb-2">Create Account</h2>
-          <p className="text-gray-400">Start designing your custom stole today</p>
+          <h2 className="mb-2 text-3xl font-display font-bold text-text-primary">Create Account</h2>
+          <p className="text-text-secondary">Start designing your custom stole today</p>
         </div>
 
-        <div className="bg-gray-900/50 backdrop-blur border border-gold-500/20 rounded-2xl p-8">
+        <div className="rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-8 backdrop-blur">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-start"
+                className="flex items-start rounded-lg border border-red-500/40 bg-red-500/10 p-4"
               >
-                <AlertCircle className="h-5 w-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-red-400 text-sm">{error}</p>
+                <AlertCircle className="mr-3 mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
+                <p className="text-sm text-red-400">{error}</p>
               </motion.div>
             )}
 
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-text-secondary">
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-text-secondary/70" />
                 <input
                   id="fullName"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all"
+                  className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 pl-10 text-text-primary placeholder:text-text-secondary/60 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent-primary"
                   placeholder="John Doe"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-text-secondary">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-text-secondary/70" />
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all"
+                  className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 pl-10 text-text-primary placeholder:text-text-secondary/60 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent-primary"
                   placeholder="you@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="mb-2 block text-sm font-medium text-text-secondary">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-text-secondary/70" />
                 <input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all"
+                  className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 pl-10 text-text-primary placeholder:text-text-secondary/60 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent-primary"
                   placeholder="••••••••"
                 />
               </div>
-              <p className="mt-2 text-xs text-gray-500">Must be at least 6 characters</p>
+              <p className="mt-2 text-xs text-text-secondary/70">Must be at least 6 characters</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-gold-500 to-gold-600 text-black py-3 rounded-lg font-semibold hover:from-gold-400 hover:to-gold-500 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="btn-accent-gradient w-full transform rounded-lg py-3 font-semibold text-text-inverted transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-sm text-text-secondary">
               Already have an account?{' '}
-              <Link to="/login" className="text-gold-400 hover:text-gold-300 font-medium transition-colors">
+              <Link to="/login" className="font-medium text-accent-primary transition-colors hover:text-accent-secondary">
                 Sign in here
               </Link>
             </p>

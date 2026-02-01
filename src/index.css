@@ -1,3 +1,92 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        color-scheme: dark;
+    }
+
+    body {
+        --app-bg: 5 6 12;
+        --app-surface: 15 18 28;
+        --app-surface-elevated: 24 28 42;
+        --app-surface-muted: 32 37 55;
+        --app-border-subtle: 55 65 81;
+        --app-border-strong: 148 163 184;
+        --text-primary: 255 255 255;
+        --text-secondary: 203 213 225;
+        --text-inverted: 10 10 12;
+        --accent-primary: 212 175 55;
+        --accent-secondary: 234 179 8;
+        --accent-tertiary: 149 114 252;
+        --gradient-hero-top: 0 0 0;
+        --gradient-hero-mid: 28 34 56;
+        --gradient-hero-bottom: 5 6 12;
+        --gradient-section-start: 5 6 12;
+        --gradient-section-end: 17 24 39;
+        --glow-color: 212 175 55;
+        --button-primary-start: 212 175 55;
+        --button-primary-end: 234 179 8;
+        --heading-gradient-start: 234 208 120;
+        --heading-gradient-mid: 212 175 55;
+        --heading-gradient-end: 234 208 120;
+
+        min-height: 100vh;
+        background-color: rgb(var(--app-bg));
+        color: rgb(var(--text-primary));
+        transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    body[data-theme='light'] {
+        color-scheme: light;
+        --app-bg: 248 250 252;
+        --app-surface: 255 255 255;
+        --app-surface-elevated: 241 245 249;
+        --app-surface-muted: 229 231 235;
+        --app-border-subtle: 209 213 219;
+        --app-border-strong: 148 163 184;
+        --text-primary: 15 23 42;
+        --text-secondary: 71 85 105;
+        --text-inverted: 255 255 255;
+        --accent-primary: 220 38 38;
+        --accent-secondary: 34 197 94;
+        --accent-tertiary: 59 130 246;
+        --gradient-hero-top: 255 255 255;
+        --gradient-hero-mid: 248 250 252;
+        --gradient-hero-bottom: 224 231 255;
+        --gradient-section-start: 255 255 255;
+        --gradient-section-end: 241 245 249;
+        --glow-color: 220 38 38;
+        --button-primary-start: 220 38 38;
+        --button-primary-end: 34 197 94;
+        --heading-gradient-start: 220 38 38;
+        --heading-gradient-mid: 249 115 22;
+        --heading-gradient-end: 34 197 94;
+    }
+}
+
+@layer utilities {
+    .bg-hero-gradient {
+        background-image: radial-gradient(circle at top, rgba(var(--gradient-hero-top) / 0.9), rgba(var(--gradient-hero-mid) / 0.85) 55%, rgba(var(--gradient-hero-bottom) / 1) 100%);
+    }
+
+    .bg-section-gradient {
+        background-image: linear-gradient(to bottom, rgba(var(--gradient-section-start) / 1), rgba(var(--gradient-section-end) / 1));
+    }
+
+    .glow-ring {
+        box-shadow: 0 0 45px rgba(var(--glow-color) / 0.35);
+    }
+
+    .btn-accent-gradient {
+        background-image: linear-gradient(to right, rgba(var(--button-primary-start) / 1), rgba(var(--button-primary-end) / 1));
+    }
+
+    .bg-heading-gradient {
+        background-image: linear-gradient(to right,
+                rgba(var(--heading-gradient-start) / 1),
+                rgba(var(--heading-gradient-mid) / 1),
+                rgba(var(--heading-gradient-end) / 1));
+    }
+}

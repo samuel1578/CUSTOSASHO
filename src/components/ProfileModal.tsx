@@ -48,9 +48,9 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
     const availableProgrammes = useMemo(() => {
         if (!university || !college) return [];
         const entry = academicData[university as keyof typeof academicData];
-        const programmes = entry?.colleges?.[college as keyof typeof entry.colleges] ?? [];
+        const programmes = entry?.colleges?.[college as keyof typeof entry.colleges] ?? ([] as string[]);
         const list = Array.from(programmes);
-        return programme && !list.includes(programme) ? [...list, programme] : list;
+        return programme && !list.includes(programme as (typeof list)[number]) ? [...list, programme] : list;
     }, [academicData, university, college, programme]);
 
     const shouldShowModal = useMemo(
@@ -102,7 +102,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         }
 
         const entry = academicData[university as keyof typeof academicData];
-        const programmes = entry?.colleges?.[college as keyof typeof entry.colleges] ?? [];
+        const programmes: string[] = entry?.colleges?.[college as keyof typeof entry.colleges] ?? [];
 
         if (programme && !programmes.includes(programme)) {
             setProgramme('');
@@ -153,7 +153,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         <AnimatePresence>
             {shouldShowModal && (
                 <motion.div
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur"
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-app-base/80 backdrop-blur transition-colors"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -163,26 +163,26 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="relative w-full max-w-2xl rounded-2xl border border-gold-500/30 bg-gray-900/95 p-8 shadow-2xl"
+                        className="relative w-full max-w-2xl rounded-2xl border border-border-subtle/40 bg-app-surface/90 p-8 text-text-primary shadow-2xl transition-colors"
                     >
                         {isEditMode && onClose && (
                             <button
                                 onClick={onClose}
-                                className="absolute right-6 top-6 rounded-full bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
+                                className="absolute right-6 top-6 rounded-full border border-border-subtle/40 bg-app-elevated/70 p-2 text-text-secondary transition-colors hover:border-accent-primary hover:text-accent-primary"
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         )}
 
                         <div className="mb-6 flex items-start gap-4">
-                            <div className="rounded-xl bg-gold-500/15 p-3 text-gold-400">
+                            <div className="rounded-xl bg-accent-primary/15 p-3 text-accent-primary">
                                 <Sparkles className="h-8 w-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-display font-semibold text-white">
+                                <h2 className="text-2xl font-display font-semibold text-text-primary">
                                     {isEditMode ? 'Edit Your Profile' : 'Complete Your Profile'}
                                 </h2>
-                                <p className="mt-2 text-sm text-gray-300">
+                                <p className="mt-2 text-sm text-text-secondary">
                                     {isEditMode
                                         ? 'Update your personal and academic information below.'
                                         : 'We need a little more information to personalize your stole experience and keep our team aligned with your graduation journey.'
@@ -193,13 +193,13 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-300">Full Name</label>
+                                <label className="mb-2 block text-sm font-medium text-text-secondary">Full Name</label>
                                 <div className="relative">
-                                    <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                    <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                     <input
                                         value={fullName}
                                         onChange={(event) => setFullName(event.target.value)}
-                                        className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         placeholder="Ama Mensah"
                                     />
                                 </div>
@@ -207,9 +207,9 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">University</label>
+                                    <label className="mb-2 block text-sm font-medium text-text-secondary">University</label>
                                     <div className="relative">
-                                        <MapPin className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <MapPin className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                         <select
                                             value={university}
                                             onChange={(event) => {
@@ -217,7 +217,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                                 setCollege('');
                                                 setProgramme('');
                                             }}
-                                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                            className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         >
                                             <option value="" disabled>
                                                 Select university
@@ -232,9 +232,9 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">College</label>
+                                    <label className="mb-2 block text-sm font-medium text-text-secondary">College</label>
                                     <div className="relative">
-                                        <Building2 className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <Building2 className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                         <select
                                             value={college}
                                             onChange={(event) => {
@@ -242,7 +242,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                                 setProgramme('');
                                             }}
                                             disabled={!university}
-                                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white disabled:cursor-not-allowed disabled:opacity-50 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                            className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         >
                                             <option value="" disabled>
                                                 {university ? 'Select college' : 'Choose university first'}
@@ -259,14 +259,14 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">Programme</label>
+                                    <label className="mb-2 block text-sm font-medium text-text-secondary">Programme</label>
                                     <div className="relative">
-                                        <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                         <select
                                             value={programme}
                                             onChange={(event) => setProgramme(event.target.value)}
                                             disabled={!college}
-                                            className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white disabled:cursor-not-allowed disabled:opacity-50 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                            className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         >
                                             <option value="" disabled>
                                                 {college ? 'Select programme' : 'Choose college first'}
@@ -281,13 +281,13 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">Graduation Year</label>
+                                    <label className="mb-2 block text-sm font-medium text-text-secondary">Graduation Year</label>
                                     <div className="relative">
-                                        <Calendar className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                        <Calendar className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                         <input
                                             value={graduationYear}
                                             onChange={(event) => setGraduationYear(event.target.value)}
-                                            className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                            className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                             placeholder="2026"
                                         />
                                     </div>
@@ -295,13 +295,13 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-300">Contact Phone (optional)</label>
+                                <label className="mb-2 block text-sm font-medium text-text-secondary">Contact Phone (optional)</label>
                                 <div className="relative">
-                                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                     <input
                                         value={phone}
                                         onChange={(event) => setPhone(event.target.value)}
-                                        className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 pl-11 pr-4 text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                        className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         placeholder="+233 123 456 789"
                                     />
                                 </div>
@@ -312,7 +312,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full rounded-lg bg-gradient-to-r from-gold-500 to-gold-600 py-3 text-center text-sm font-semibold text-black transition-all hover:from-gold-400 hover:to-gold-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="btn-accent-gradient w-full rounded-lg py-3 text-center text-sm font-semibold text-text-inverted transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                             >
                                 {submitting ? 'Saving profile...' : (isEditMode ? 'Update Profile' : 'Save and Continue')}
                             </button>

@@ -1,9 +1,37 @@
+const withOpacity = (variable) => ({ opacityValue }) => {
+  if (opacityValue !== undefined) {
+    return `rgb(var(${variable}) / ${opacityValue})`;
+  }
+
+  return `rgb(var(${variable}) / 1)`;
+};
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
+        app: {
+          base: withOpacity('--app-bg'),
+          surface: withOpacity('--app-surface'),
+          elevated: withOpacity('--app-surface-elevated'),
+          muted: withOpacity('--app-surface-muted'),
+        },
+        text: {
+          primary: withOpacity('--text-primary'),
+          secondary: withOpacity('--text-secondary'),
+          inverted: withOpacity('--text-inverted'),
+        },
+        accent: {
+          primary: withOpacity('--accent-primary'),
+          secondary: withOpacity('--accent-secondary'),
+          tertiary: withOpacity('--accent-tertiary'),
+        },
+        border: {
+          subtle: withOpacity('--app-border-subtle'),
+          strong: withOpacity('--app-border-strong'),
+        },
         gold: {
           50: '#FFFDF7',
           100: '#FFF9E6',

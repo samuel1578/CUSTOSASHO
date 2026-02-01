@@ -12,8 +12,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   if (loading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4AF37]"></div>
+      <div className="flex min-h-screen items-center justify-center bg-app-base text-text-primary transition-colors">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-accent-primary"></div>
       </div>
     );
   }
