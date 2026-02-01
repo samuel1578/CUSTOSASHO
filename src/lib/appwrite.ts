@@ -5,18 +5,21 @@ const appwriteProjectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
 const appwriteDatabaseId = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const appwriteProfileCollectionId = import.meta.env.VITE_APPWRITE_PROFILE_COLLECTION_ID;
 
-if (!appwriteEndpoint || !appwriteProjectId) {
-    throw new Error('Missing Appwrite environment variables');
+// Only throw errors if we're in production and these aren't set
+if (import.meta.env.PROD && (!appwriteEndpoint || !appwriteProjectId)) {
+    console.error('Missing Appwrite environment variables');
 }
 
-if (!appwriteDatabaseId || !appwriteProfileCollectionId) {
-    throw new Error('Missing Appwrite profile database configuration');
+if (import.meta.env.PROD && (!appwriteDatabaseId || !appwriteProfileCollectionId)) {
+    console.error('Missing Appwrite profile database configuration');
 }
 
-const client = new Client().setEndpoint(appwriteEndpoint).setProject(appwriteProjectId);
+const client = appwriteEndpoint && appwriteProjectId
+    ? new Client().setEndpoint(appwriteEndpoint).setProject(appwriteProjectId)
+    : null;
 
-export const account = new Account(client);
-export const databases = new Databases(client);
+export const account = client ? new Account(client) : null;
+export const databases = client ? new Databases(client) : null;
 
 export type AppwriteUser = Models.User<Models.Preferences>;
 
