@@ -202,8 +202,13 @@ export function DashboardPage() {
               <p className="mt-6 text-sm text-text-secondary">
                 Latest base color selection anchors your stole. Update it anytime inside the designer.
               </p>
-              <div className="mt-6 rounded-xl border border-border-subtle/40 bg-app-elevated/70 px-4 py-3 text-xs uppercase tracking-[0.25em] text-text-secondary/70">
-                Current Stripe: {submissions[0]?.stripeStyle || 'Not Selected'}
+              <div className="mt-6 space-y-3">
+                <div className="rounded-xl border border-border-subtle/40 bg-app-elevated/70 px-4 py-3 text-xs uppercase tracking-[0.25em] text-text-secondary/70">
+                  Graduating Class: {submissions[0]?.graduatingClass || 'Not provided'}
+                </div>
+                <div className="rounded-xl border border-border-subtle/40 bg-app-elevated/70 px-4 py-3 text-xs uppercase tracking-[0.25em] text-text-secondary/70">
+                  Faculty Logo: {submissions[0]?.facultyLogo ? submissions[0]?.facultyLogo.toUpperCase() : 'Not provided'}
+                </div>
               </div>
             </motion.div>
 
@@ -272,7 +277,10 @@ export function DashboardPage() {
                         </p>
                         <h3 className="mt-2 text-2xl font-semibold text-text-primary">Standard Stole Journey</h3>
                         <p className="mt-1 text-sm text-text-secondary">
-                          Base: {submission.baseColor.toUpperCase()} · Stripe: {submission.stripeStyle}
+                          Base: {submission.baseColor.toUpperCase()} · Graduating Class: {submission.graduatingClass || 'N/A'}
+                        </p>
+                        <p className="text-xs uppercase tracking-[0.25em] text-text-secondary/70">
+                          Faculty Logo: {submission.facultyLogo ? submission.facultyLogo.toUpperCase() : 'Not provided'}
                         </p>
                       </div>
                       <div className="rounded-xl border border-border-subtle/50 bg-app-elevated/70 px-4 py-3 text-xs uppercase tracking-[0.25em] text-text-secondary/70">

@@ -7,6 +7,13 @@ export function AdminDashboard() {
   const [submissions, setSubmissions] = useState<DesignSubmissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const facultyLabelMap: Record<string, string> = {
+    science: 'Science Faculty Logo',
+    engineering: 'Engineering Faculty Logo',
+    business: 'Business Faculty Logo',
+    arts: 'Arts Faculty Logo',
+  };
+
   useEffect(() => {
     loadSubmissions();
   }, []);
@@ -110,9 +117,10 @@ export function AdminDashboard() {
 
                     <div className="mt-6 grid gap-6 lg:grid-cols-3">
                       <div className="rounded-xl border border-border-subtle/40 bg-app-elevated/70 p-5">
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-secondary/70">Base & Stripe</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-text-secondary/70">Base & Accents</p>
                         <p className="mt-3 text-lg font-semibold text-text-primary">Base: {submission.baseColor.toUpperCase()}</p>
-                        <p className="text-sm text-text-secondary">Stripe: {submission.stripeStyle}</p>
+                        <p className="text-sm text-text-secondary">Graduating Class: {submission.graduatingClass || 'Not provided'}</p>
+                        <p className="text-sm text-text-secondary">Faculty Logo: {submission.facultyLogo ? facultyLabelMap[submission.facultyLogo] ?? submission.facultyLogo : 'Not provided'}</p>
                       </div>
                       <div className="rounded-xl border border-border-subtle/40 bg-app-elevated/70 p-5">
                         <p className="text-xs uppercase tracking-[0.3em] text-text-secondary/70">Academics</p>

@@ -176,11 +176,12 @@ type PackageSelection = 'standard' | 'premium';
 
 export interface DesignSubmissionInput {
     baseColor: string;
-    stripeStyle: string;
     packageChoice: PackageSelection;
     quote: string;
     additionalNotes: string;
     consentAccepted: boolean;
+    graduatingClass?: string;
+    facultyLogo?: string;
     contact: {
         fullName: string;
         email: string;

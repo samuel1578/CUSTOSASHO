@@ -4,8 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { saveDesignSubmission } from '../lib/appwrite';
+import blackBasePreview from '../assets/blckbse.jpg';
+import yellowBasePreview from '../assets/yellowbse.png';
+import brandLogo from '../assets/logo.png';
 
-type StepId = 'welcome' | 'base' | 'stripes' | 'package' | 'consent';
+type StepId = 'welcome' | 'base' | 'package' | 'consent';
 
 interface StepDefinition {
   id: StepId;
@@ -25,11 +28,6 @@ const STEP_FLOW: StepDefinition[] = [
     description: 'Select the foundation color that anchors your story.',
   },
   {
-    id: 'stripes',
-    title: 'Stripe Combination',
-    description: 'Pick the stripe rhythm that reflects your heritage and style.',
-  },
-  {
     id: 'package',
     title: 'Select Package',
     description: 'Review the available stole experiences before we craft the details.',
@@ -41,42 +39,52 @@ const STEP_FLOW: StepDefinition[] = [
   },
 ];
 
-const BASE_COLORS = [
+interface BaseOption {
+  value: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+const GRADUATING_CLASS_OPTIONS = [
+  'First Class',
+  'Second Class Upper',
+  'Second Class Lower',
+  'Third Class',
+  'Pass',
+];
+
+const FACULTY_LOGO_OPTIONS = [
+  {
+    value: 'science',
+    label: 'Science Faculty Logo',
+  },
+  {
+    value: 'engineering',
+    label: 'Engineering Faculty Logo',
+  },
+  {
+    value: 'business',
+    label: 'Business Faculty Logo',
+  },
+  {
+    value: 'arts',
+    label: 'Arts Faculty Logo',
+  },
+];
+
+const BASE_COLORS: BaseOption[] = [
   {
     value: 'black',
     title: 'Black Base',
     description: 'Classic ebony backdrop that makes every accent shimmer.',
-    swatch: 'from-gray-900 via-black to-gray-800',
+    image: blackBasePreview,
   },
   {
     value: 'yellow',
     title: 'Yellow Base',
     description: 'Radiant gold-tone to spotlight your achievements.',
-    swatch: 'from-yellow-500 via-amber-400 to-yellow-300',
-  },
-  {
-    value: 'green',
-    title: 'Green Base',
-    description: 'Vibrant emerald inspired by rich Ghanaian heritage.',
-    swatch: 'from-emerald-600 via-green-500 to-emerald-400',
-  },
-];
-
-const STRIPE_OPTIONS = [
-  {
-    value: 'heritage-contrast',
-    title: 'Heritage Contrast',
-    description: 'Bold tricolor striping celebrating unity, strength, and royalty.',
-  },
-  {
-    value: 'sunrise-gradient',
-    title: 'Sunrise Gradient',
-    description: 'Soft tonal fade that mirrors dawn reflections on woven kente.',
-  },
-  {
-    value: 'minimal-accent',
-    title: 'Minimal Accent',
-    description: 'Subtle dual stripes for an understated modern finish.',
+    image: yellowBasePreview,
   },
 ];
 
@@ -111,11 +119,12 @@ const PACKAGE_OPTIONS = [
 
 interface DesignerFormState {
   baseColor: string;
-  stripeStyle: string;
   packageChoice: 'standard' | 'premium';
   quote: string;
   additionalNotes: string;
   consentAccepted: boolean;
+  graduatingClass: string;
+  facultyLogo: string;
   contact: {
     fullName: string;
     email: string;
@@ -132,11 +141,12 @@ export function DesignerPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState<DesignerFormState>({
     baseColor: '',
-    stripeStyle: '',
     packageChoice: 'standard',
     quote: '',
     additionalNotes: '',
     consentAccepted: false,
+    graduatingClass: '',
+    facultyLogo: '',
     contact: {
       fullName: '',
       email: '',
@@ -180,11 +190,6 @@ export function DesignerPage() {
     setError(null);
   };
 
-  const handleStripeSelection = (value: string) => {
-    setForm((prev) => ({ ...prev, stripeStyle: value }));
-    setError(null);
-  };
-
   const handlePackageSelection = (value: 'standard' | 'premium', unavailable: boolean) => {
     if (unavailable) {
       setError('The premium stole is not currently in production.');
@@ -209,11 +214,6 @@ export function DesignerPage() {
       case 'base':
         if (!form.baseColor) {
           return 'Please choose a base color to continue.';
-        }
-        break;
-      case 'stripes':
-        if (!form.stripeStyle) {
-          return 'Select a stripe combination that fits your vision.';
         }
         break;
       case 'package':
@@ -273,11 +273,12 @@ export function DesignerPage() {
       setConfirmation(null);
       await saveDesignSubmission(user.$id, {
         baseColor: form.baseColor,
-        stripeStyle: form.stripeStyle,
         packageChoice: form.packageChoice,
         quote: form.quote,
         additionalNotes: form.additionalNotes,
         consentAccepted: form.consentAccepted,
+        graduatingClass: form.graduatingClass || undefined,
+        facultyLogo: form.facultyLogo || undefined,
         contact: form.contact,
       });
       setConfirmation('Your Custosasho design journey is saved. Redirecting you to the dashboard...');
@@ -300,8 +301,8 @@ export function DesignerPage() {
       className="mx-auto w-full max-w-3xl space-y-8 text-center"
     >
       <div className="flex flex-col items-center space-y-6">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-accent-primary/40 bg-accent-primary/10">
-          <span className="font-semibold text-accent-primary">Logo</span>
+        <div className="flex h-32 w-32 items-center justify-center rounded-full border border-accent-primary/50 bg-app-surface/40 p-3 shadow-md shadow-accent-primary/10">
+          <img src={brandLogo} alt="Custosasho logo" className="h-full w-full object-contain" />
         </div>
         <div>
           <h1 className="mb-4 text-4xl font-display font-bold text-text-primary sm:text-5xl">
@@ -324,7 +325,7 @@ export function DesignerPage() {
       transition={{ duration: 0.4 }}
       className="w-full max-w-5xl mx-auto"
     >
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {BASE_COLORS.map((color) => {
           const selected = form.baseColor === color.value;
           return (
@@ -336,51 +337,16 @@ export function DesignerPage() {
                 : 'border-border-subtle/50 bg-app-surface/40 hover:border-accent-primary/60 hover:bg-app-surface/70'
                 }`}
             >
-              <div className={`h-36 w-full rounded-xl bg-gradient-to-br ${color.swatch}`}></div>
+              <div className="h-48 w-full overflow-hidden rounded-xl bg-app-surface">
+                <img
+                  src={color.image}
+                  alt={color.title}
+                  className="h-full w-full object-contain"
+                />
+              </div>
               <div>
                 <h3 className="mb-2 text-xl font-semibold text-text-primary">{color.title}</h3>
                 <p className="text-sm leading-relaxed text-text-secondary">{color.description}</p>
-              </div>
-              {selected && (
-                <span className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-accent-primary/20 px-3 py-1 text-xs font-semibold text-accent-primary">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Selected
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
-  );
-
-  const renderStripeSelection = () => (
-    <motion.div
-      key="stripes"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
-      className="w-full max-w-5xl mx-auto"
-    >
-      <div className="grid gap-6 md:grid-cols-3">
-        {STRIPE_OPTIONS.map((option) => {
-          const selected = form.stripeStyle === option.value;
-          return (
-            <button
-              key={option.value}
-              onClick={() => handleStripeSelection(option.value)}
-              className={`relative flex flex-col items-start gap-4 rounded-2xl border-2 p-6 text-left transition-all ${selected
-                ? 'border-accent-primary/80 bg-accent-primary/10 shadow-lg shadow-accent-primary/20'
-                : 'border-border-subtle/50 bg-app-surface/40 hover:border-accent-primary/60 hover:bg-app-surface/70'
-                }`}
-            >
-              <div className="flex h-36 w-full items-center justify-center rounded-xl bg-gradient-to-br from-app-elevated via-app-muted to-app-elevated">
-                <span className="text-sm uppercase tracking-wide text-text-secondary/70">Stripe Mockup</span>
-              </div>
-              <div>
-                <h3 className="mb-2 text-xl font-semibold text-text-primary">{option.title}</h3>
-                <p className="text-sm leading-relaxed text-text-secondary">{option.description}</p>
               </div>
               {selected && (
                 <span className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-accent-primary/20 px-3 py-1 text-xs font-semibold text-accent-primary">
@@ -526,6 +492,38 @@ export function DesignerPage() {
               />
             </div>
           </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-secondary">Graduating Class <span className="text-xs font-normal text-text-secondary/70">(optional)</span></label>
+              <select
+                value={form.graduatingClass}
+                onChange={(event) => setForm((prev) => ({ ...prev, graduatingClass: event.target.value }))}
+                className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 text-sm text-text-primary transition-colors focus:border-accent-primary focus:outline-none"
+              >
+                <option value="">Select class</option>
+                {GRADUATING_CLASS_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-secondary">Faculty Logo <span className="text-xs font-normal text-text-secondary/70">(optional)</span></label>
+              <select
+                value={form.facultyLogo}
+                onChange={(event) => setForm((prev) => ({ ...prev, facultyLogo: event.target.value }))}
+                className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 text-sm text-text-primary transition-colors focus:border-accent-primary focus:outline-none"
+              >
+                <option value="">No logo</option>
+                {FACULTY_LOGO_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div>
             <label className="mb-2 block text-sm font-semibold text-text-secondary">Favourite Quote</label>
             <textarea
@@ -581,7 +579,6 @@ export function DesignerPage() {
   const stepContentMap: Record<StepId, () => JSX.Element> = {
     welcome: renderWelcome,
     base: renderBaseSelection,
-    stripes: renderStripeSelection,
     package: renderPackageSelection,
     consent: renderConsent,
   };
