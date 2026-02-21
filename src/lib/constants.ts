@@ -91,6 +91,21 @@ export const KENTE_COLORS = [
   { name: 'Orange', hex: '#EA580C' },
 ];
 
+// School options available in the system
+export const SCHOOL_OPTIONS = [
+  'University of Ghana',
+  'New Nation School',
+  'GIMPA',
+  'UPSA',
+] as const;
+
+// Schools that use simple text input for courses instead of dropdown system
+export const SIMPLE_INPUT_SCHOOLS = [
+  'New Nation School',
+  'GIMPA',
+  'UPSA',
+] as const;
+
 export const UNIVERSITY_ACADEMICS = {
   'University of Ghana': {
     colleges: {

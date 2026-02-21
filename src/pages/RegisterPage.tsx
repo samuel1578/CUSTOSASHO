@@ -27,7 +27,7 @@ export function RegisterPage() {
       return;
     }
 
-    const { error } = await signUp(email, password, fullName);
+    const { error, isAdmin } = await signUp(email, password, fullName);
 
     if (error) {
       setError(error.message);
@@ -39,7 +39,12 @@ export function RegisterPage() {
       setPendingRedirect(nextParam);
     }
 
-    navigate('/dashboard');
+    // Redirect admins to admin dashboard, regular users to user dashboard
+    if (isAdmin) {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (

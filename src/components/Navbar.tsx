@@ -10,7 +10,7 @@ const MENU_CLOSE_DELAY_MS = 340;
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, profile, profileComplete, signOut, setPendingRedirect } = useAuth();
+  const { user, profile, profileComplete, signOut, setPendingRedirect, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const reactId = useId();
@@ -112,9 +112,9 @@ export function Navbar() {
     if (user) {
       items.push({
         id: 'dashboard',
-        label: profile?.role === 'admin' ? 'Admin' : 'Dashboard',
-        description: profile?.role === 'admin' ? 'Manage orders and designs' : 'Continue your journey',
-        onSelect: () => runAfterMenuClose(() => navigate(profile?.role === 'admin' ? '/admin' : '/dashboard')),
+        label: isAdmin ? 'Admin' : 'Dashboard',
+        description: isAdmin ? 'Manage orders and designs' : 'Continue your journey',
+        onSelect: () => runAfterMenuClose(() => navigate(isAdmin ? '/admin' : '/dashboard')),
       });
 
       items.push({
@@ -176,10 +176,10 @@ export function Navbar() {
             {user ? (
               <>
                 <Link
-                  to={profile?.role === 'admin' ? '/admin' : '/dashboard'}
-                  className="font-medium text-text-secondary transition-colors hover:text-accent-primary"
+                  to={isAdmin ? '/admin' : '/dashboard'}
+                  className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors hover:text-accent-primary"
                 >
-                  {profile?.role === 'admin' ? 'Admin' : 'Dashboard'}
+                  {isAdmin ? 'Admin' : 'Dashboard'}
                 </Link>
                 <button
                   onClick={() => void handleSignOut()}

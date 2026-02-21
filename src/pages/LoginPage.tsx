@@ -20,7 +20,7 @@ export function LoginPage() {
     setError('');
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const { error, isAdmin } = await signIn(email, password);
 
     if (error) {
       setError(error.message);
@@ -32,7 +32,12 @@ export function LoginPage() {
       setPendingRedirect(nextParam);
     }
 
-    navigate('/dashboard');
+    // Redirect admins to admin dashboard, regular users to user dashboard
+    if (isAdmin) {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (

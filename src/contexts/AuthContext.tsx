@@ -9,25 +9,35 @@ import {
   signOutCurrentSession,
   signUpWithEmailPassword,
   upsertProfile,
+  isUserInAdminTeam,
 } from '../lib/appwrite';
-
-const REQUIRED_PROFILE_FIELDS: Array<keyof Pick<ProfileRecord, 'fullName' | 'college' | 'university' | 'programme' | 'graduationYear'>> = [
-  'fullName',
-  'college',
-  'university',
-  'programme',
-  'graduationYear',
-];
-
-const trimValue = (value: string | null) => (value ?? '').trim();
+import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
 
 const isProfileComplete = (profile: ProfileRecord | null) => {
   if (!profile) {
     return false;
   }
 
-  const hasRequiredFields = REQUIRED_PROFILE_FIELDS.every((field) => trimValue(profile[field]) !== '');
-  return hasRequiredFields && profile.onboardingComplete;
+  const trimValue = (value: string | null) => (value ?? '').trim();
+
+  // Check basic required fields
+  const basicFields = ['fullName', 'university', 'graduationYear'];
+  const hasBasicFields = basicFields.every((field) => trimValue(profile[field as keyof ProfileRecord] as string) !== '');
+
+  if (!hasBasicFields || !profile.onboardingComplete) {
+    return false;
+  }
+
+  // Check school-specific required fields
+  const isSimpleInputSchool = profile.university && SIMPLE_INPUT_SCHOOLS.includes(profile.university as any);
+
+  if (isSimpleInputSchool) {
+    // For simple input schools, require course field
+    return trimValue(profile.course) !== '';
+  } else {
+    // For University of Ghana, require college and programme
+    return trimValue(profile.college) !== '' && trimValue(profile.programme) !== '';
+  }
 };
 
 interface AuthContextType {
@@ -36,8 +46,8 @@ interface AuthContextType {
   loading: boolean;
   profileLoading: boolean;
   profileComplete: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null; isAdmin?: boolean }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; isAdmin?: boolean }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   saveProfile: (input: ProfileUpsertInput) => Promise<{ error: Error | null }>;
@@ -53,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [pendingRedirect, setPendingRedirectState] = useState<string | null>(null);
 
   useEffect(() => {
@@ -84,22 +95,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return target;
   }, [pendingRedirect, setPendingRedirect]);
 
-  const hydrateProfile = useCallback(async (nextUser: AppwriteUser | null) => {
+  const hydrateProfile = useCallback(async (nextUser: AppwriteUser | null): Promise<boolean> => {
     if (!nextUser) {
       setProfile(null);
       setProfileLoading(false);
       setProfileComplete(false);
-      return;
+      setIsAdmin(false);
+      return false;
     }
 
     setProfileLoading(true);
+
+    // Check admin team membership
+    const adminStatus = await isUserInAdminTeam();
+    setIsAdmin(adminStatus);
+
     const existingProfile = await getProfileByUserId(nextUser.$id);
 
     if (existingProfile) {
       setProfile(existingProfile);
       setProfileComplete(isProfileComplete(existingProfile));
       setProfileLoading(false);
-      return;
+      return adminStatus;
     }
 
     const seededProfile = await upsertProfile(nextUser.$id, {
@@ -111,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(seededProfile);
     setProfileComplete(isProfileComplete(seededProfile));
     setProfileLoading(false);
+    return adminStatus;
   }, []);
 
   useEffect(() => {
@@ -128,8 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithEmailPassword(email, password);
       const currentUser = await getCurrentUser();
       setUser(currentUser);
-      await hydrateProfile(currentUser);
-      return { error: null };
+      const adminStatus = await hydrateProfile(currentUser);
+      return { error: null, isAdmin: adminStatus };
     } catch (error) {
       return { error: error as Error };
     }
@@ -140,8 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithEmailPassword(email, password);
       const currentUser = await getCurrentUser();
       setUser(currentUser);
-      await hydrateProfile(currentUser);
-      return { error: null };
+      const adminStatus = await hydrateProfile(currentUser);
+      return { error: null, isAdmin: adminStatus };
     } catch (error) {
       return { error: error as Error };
     }
@@ -153,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setProfileComplete(false);
     setProfileLoading(false);
+    setIsAdmin(false);
     setPendingRedirect(null);
   }, [setPendingRedirect]);
 
@@ -192,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
-      isAdmin: profile?.role === 'admin',
+      isAdmin,
       saveProfile,
       setPendingRedirect,
       consumePendingRedirect,
@@ -206,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
+      isAdmin,
       saveProfile,
       setPendingRedirect,
       consumePendingRedirect,

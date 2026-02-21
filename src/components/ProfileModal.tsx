@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, Calendar, GraduationCap, MapPin, Phone, Sparkles, User, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { UNIVERSITY_ACADEMICS } from '../lib/constants';
+import { UNIVERSITY_ACADEMICS, SCHOOL_OPTIONS, SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
 
 const trim = (value: string) => value.trim();
 
@@ -28,6 +28,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
     const [college, setCollege] = useState(() => profile?.college ?? '');
     const [university, setUniversity] = useState(() => profile?.university ?? '');
     const [programme, setProgramme] = useState(() => profile?.programme ?? '');
+    const [course, setCourse] = useState(() => profile?.course ?? ''); // For simple input schools
     const [graduationYear, setGraduationYear] = useState('');
     const [phone, setPhone] = useState('');
     const [error, setError] = useState('');
@@ -35,7 +36,11 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
 
     const academicData = useMemo(() => UNIVERSITY_ACADEMICS, []);
 
-    const universities = useMemo(() => Object.keys(academicData), [academicData]);
+    const schools = useMemo(() => SCHOOL_OPTIONS, []);
+
+    const isSimpleInputSchool = useMemo(() => {
+        return university && SIMPLE_INPUT_SCHOOLS.includes(university as any);
+    }, [university]);
 
     const availableColleges = useMemo(() => {
         if (!university) return [];
@@ -69,6 +74,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
             setCollege(profile.college ?? '');
             setUniversity(profile.university ?? '');
             setProgramme(profile.programme ?? '');
+            setCourse(profile.course ?? '');
             setGraduationYear(profile.graduationYear ?? '');
             setPhone(profile.phone ?? '');
         }
@@ -78,9 +84,19 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         if (!university) {
             setCollege('');
             setProgramme('');
+            setCourse('');
             return;
         }
 
+        // For simple input schools, clear dropdown fields and keep course field
+        if (SIMPLE_INPUT_SCHOOLS.includes(university as any)) {
+            setCollege('');
+            setProgramme('');
+            return;
+        }
+
+        // For University of Ghana, clear course field and handle dropdown logic
+        setCourse('');
         const entry = academicData[university as keyof typeof academicData];
         if (!entry) {
             setCollege('');
@@ -113,7 +129,14 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         event.preventDefault();
         setError('');
 
-        const requiredFields = [fullName, university, college, programme, graduationYear];
+        // Validate required fields based on school type
+        let requiredFields: string[];
+        if (isSimpleInputSchool) {
+            requiredFields = [fullName, university, course, graduationYear];
+        } else {
+            requiredFields = [fullName, university, college, programme, graduationYear];
+        }
+
         const hasEmptyField = requiredFields.some((value) => trim(value) === '');
 
         if (hasEmptyField) {
@@ -122,15 +145,25 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         }
 
         setSubmitting(true);
-        const { error } = await saveProfile({
+        const profileData: any = {
             fullName: trim(fullName),
-            college: trim(college),
             university: trim(university),
-            programme: trim(programme),
             graduationYear: trim(graduationYear),
             phone: trim(phone) || null,
             onboardingComplete: true,
-        });
+        };
+
+        if (isSimpleInputSchool) {
+            profileData.course = trim(course);
+            profileData.college = null;
+            profileData.programme = null;
+        } else {
+            profileData.college = trim(college);
+            profileData.programme = trim(programme);
+            profileData.course = null;
+        }
+
+        const { error } = await saveProfile(profileData);
 
         if (error) {
             setError(error.message ?? 'Unable to save your profile. Please try again.');
@@ -207,7 +240,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-text-secondary">University</label>
+                                    <label className="mb-2 block text-sm font-medium text-text-secondary">School</label>
                                     <div className="relative">
                                         <MapPin className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
                                         <select
@@ -216,13 +249,14 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                                 setUniversity(event.target.value);
                                                 setCollege('');
                                                 setProgramme('');
+                                                setCourse('');
                                             }}
                                             className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         >
                                             <option value="" disabled>
-                                                Select university
+                                                Select school
                                             </option>
-                                            {universities.map((option) => (
+                                            {schools.map((option) => (
                                                 <option key={option} value={option}>
                                                     {option}
                                                 </option>
@@ -231,54 +265,71 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="mb-2 block text-sm font-medium text-text-secondary">College</label>
-                                    <div className="relative">
-                                        <Building2 className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
-                                        <select
-                                            value={college}
-                                            onChange={(event) => {
-                                                setCollege(event.target.value);
-                                                setProgramme('');
-                                            }}
-                                            disabled={!university}
-                                            className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
-                                        >
-                                            <option value="" disabled>
-                                                {university ? 'Select college' : 'Choose university first'}
-                                            </option>
-                                            {availableColleges.map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option}
+                                {!isSimpleInputSchool && (
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-text-secondary">College</label>
+                                        <div className="relative">
+                                            <Building2 className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
+                                            <select
+                                                value={college}
+                                                onChange={(event) => {
+                                                    setCollege(event.target.value);
+                                                    setProgramme('');
+                                                }}
+                                                disabled={!university}
+                                                className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
+                                            >
+                                                <option value="" disabled>
+                                                    {university ? 'Select college' : 'Choose school first'}
                                                 </option>
-                                            ))}
-                                        </select>
+                                                {availableColleges.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <label className="mb-2 block text-sm font-medium text-text-secondary">Programme</label>
-                                    <div className="relative">
-                                        <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
-                                        <select
-                                            value={programme}
-                                            onChange={(event) => setProgramme(event.target.value)}
-                                            disabled={!college}
-                                            className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
-                                        >
-                                            <option value="" disabled>
-                                                {college ? 'Select programme' : 'Choose college first'}
-                                            </option>
-                                            {availableProgrammes.map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option}
-                                                </option>
-                                            ))}
-                                        </select>
+                                {isSimpleInputSchool ? (
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-text-secondary">Course</label>
+                                        <div className="relative">
+                                            <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
+                                            <input
+                                                value={course}
+                                                onChange={(event) => setCourse(event.target.value)}
+                                                className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
+                                                placeholder="Enter your course"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-text-secondary">Programme</label>
+                                        <div className="relative">
+                                            <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
+                                            <select
+                                                value={programme}
+                                                onChange={(event) => setProgramme(event.target.value)}
+                                                disabled={!college}
+                                                className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
+                                            >
+                                                <option value="" disabled>
+                                                    {college ? 'Select programme' : 'Choose college first'}
+                                                </option>
+                                                {availableProgrammes.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-text-secondary">Graduation Year</label>

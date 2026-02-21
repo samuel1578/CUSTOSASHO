@@ -3,20 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { saveDesignSubmission } from '../lib/appwrite';
+import { saveDesignSubmission, createNNSOrder } from '../lib/appwrite';
+import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
 import blackBasePreview from '../assets/blckbse.jpg';
 import yellowBasePreview from '../assets/yellowbse.png';
 import brandLogo from '../assets/logo.png';
+import nnsLogo from '../assets/nns.png';
 
 type StepId = 'welcome' | 'base' | 'package' | 'consent';
+type NNSStepId = 'contact' | 'brief' | 'review';
 
 interface StepDefinition {
-  id: StepId;
+  id: StepId | NNSStepId;
   title: string;
   description: string;
 }
 
-const STEP_FLOW: StepDefinition[] = [
+// University of Ghana flow
+const UG_STEP_FLOW: StepDefinition[] = [
   {
     id: 'welcome',
     title: 'Welcome to Custosasho',
@@ -36,6 +40,25 @@ const STEP_FLOW: StepDefinition[] = [
     id: 'consent',
     title: 'Finalize & Consent',
     description: 'Share your graduation details and authorize us to protect and use your data responsibly.',
+  },
+];
+
+// New Nation School flow
+const NNS_STEP_FLOW: StepDefinition[] = [
+  {
+    id: 'contact',
+    title: 'Your Information',
+    description: 'Confirm your details for your custom stole order.',
+  },
+  {
+    id: 'brief',
+    title: 'Design Brief',
+    description: 'Share your vision and design ideas with our creative team.',
+  },
+  {
+    id: 'review',
+    title: 'Review & Order',
+    description: 'Review your order details and submit for creation.',
   },
 ];
 
@@ -134,9 +157,21 @@ interface DesignerFormState {
   };
 }
 
+interface NNSFormState {
+  designBrief: string;
+  contact: {
+    fullName: string;
+    course: string;
+  };
+}
+
 export function DesignerPage() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+
+  // Detect school type for different flows
+  const isNNSUser = profile?.university && SIMPLE_INPUT_SCHOOLS.includes(profile.university as any);
+  const STEP_FLOW = isNNSUser ? NNS_STEP_FLOW : UG_STEP_FLOW;
 
   const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState<DesignerFormState>({
@@ -155,6 +190,13 @@ export function DesignerPage() {
       graduationYear: '',
     },
   });
+  const [nnsForm, setNnsForm] = useState<NNSFormState>({
+    designBrief: '',
+    contact: {
+      fullName: '',
+      course: '',
+    },
+  });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -170,17 +212,29 @@ export function DesignerPage() {
       return;
     }
 
-    setForm((prev) => ({
-      ...prev,
-      contact: {
-        fullName: prev.contact.fullName || profile?.fullName || user.name || user.email || '',
-        email: prev.contact.email || user.email || '',
-        phone: prev.contact.phone || profile?.phone || '',
-        course: prev.contact.course || profile?.programme || '',
-        graduationYear: prev.contact.graduationYear || profile?.graduationYear || '',
-      },
-    }));
-  }, [user, profile]);
+    if (isNNSUser) {
+      // Update NNS form with profile data
+      setNnsForm((prev) => ({
+        ...prev,
+        contact: {
+          fullName: prev.contact.fullName || profile?.fullName || user.name || user.email || '',
+          course: prev.contact.course || profile?.course || profile?.programme || '',
+        },
+      }));
+    } else {
+      // Update UG form with profile data (existing logic)
+      setForm((prev) => ({
+        ...prev,
+        contact: {
+          fullName: prev.contact.fullName || profile?.fullName || user.name || user.email || '',
+          email: prev.contact.email || user.email || '',
+          phone: prev.contact.phone || profile?.phone || '',
+          course: prev.contact.course || profile?.course || profile?.programme || '',
+          graduationYear: prev.contact.graduationYear || profile?.graduationYear || '',
+        },
+      }));
+    }
+  }, [user, profile, isNNSUser]);
 
   const currentStep = useMemo(() => STEP_FLOW[stepIndex], [stepIndex]);
   const progress = useMemo(() => ((stepIndex + 1) / STEP_FLOW.length) * 100, [stepIndex]);
@@ -210,27 +264,53 @@ export function DesignerPage() {
   };
 
   const validateStep = () => {
-    switch (currentStep.id) {
-      case 'base':
-        if (!form.baseColor) {
-          return 'Please choose a base color to continue.';
-        }
-        break;
-      case 'package':
-        if (form.packageChoice !== 'standard') {
-          return 'The premium stole is unavailable. Please continue with the Standard stole.';
-        }
-        break;
-      case 'consent':
-        if (!form.contact.fullName || !form.contact.email || !form.contact.course || !form.contact.graduationYear) {
-          return 'Complete your graduation details before saving.';
-        }
-        if (!form.consentAccepted) {
-          return 'We need your consent to securely store and process your information.';
-        }
-        break;
-      default:
-        break;
+    if (isNNSUser) {
+      // NNS validation
+      switch (currentStep.id) {
+        case 'contact':
+          if (!nnsForm.contact.fullName || !nnsForm.contact.course) {
+            return 'Contact information is required.';
+          }
+          break;
+        case 'brief':
+          if (!nnsForm.designBrief.trim()) {
+            return 'Please provide a design brief for our creative team.';
+          }
+          if (nnsForm.designBrief.length > 500) {
+            return 'Design brief must be less than 500 characters.';
+          }
+          break;
+        case 'review':
+          // Final validation
+          if (!nnsForm.contact.fullName || !nnsForm.contact.course || !nnsForm.designBrief.trim()) {
+            return 'Please complete all required information.';
+          }
+          break;
+      }
+    } else {
+      // UG validation (existing)
+      switch (currentStep.id) {
+        case 'base':
+          if (!form.baseColor) {
+            return 'Please choose a base color to continue.';
+          }
+          break;
+        case 'package':
+          if (form.packageChoice !== 'standard') {
+            return 'The premium stole is unavailable. Please continue with the Standard stole.';
+          }
+          break;
+        case 'consent':
+          if (!form.contact.fullName || !form.contact.email || !form.contact.course || !form.contact.graduationYear) {
+            return 'Complete your graduation details before saving.';
+          }
+          if (!form.consentAccepted) {
+            return 'We need your consent to securely store and process your information.';
+          }
+          break;
+        default:
+          break;
+      }
     }
     return null;
   };
@@ -238,10 +318,13 @@ export function DesignerPage() {
   const handleNext = async () => {
     setError(null);
 
-    if (currentStep.id === 'consent') {
-      const consentError = validateStep();
-      if (consentError) {
-        setError(consentError);
+    // Check if we're at the last step
+    const isLastStep = stepIndex === STEP_FLOW.length - 1;
+
+    if (isLastStep) {
+      const validationError = validateStep();
+      if (validationError) {
+        setError(validationError);
         return;
       }
       await handleSubmit();
@@ -271,18 +354,39 @@ export function DesignerPage() {
     try {
       setSaving(true);
       setConfirmation(null);
-      await saveDesignSubmission(user.$id, {
-        baseColor: form.baseColor,
-        packageChoice: form.packageChoice,
-        quote: form.quote,
-        additionalNotes: form.additionalNotes,
-        consentAccepted: form.consentAccepted,
-        graduatingClass: form.graduatingClass || undefined,
-        facultyLogo: form.facultyLogo || undefined,
-        contact: form.contact,
-      });
-      setConfirmation('Your Custosasho design journey is saved. Redirecting you to the dashboard...');
-      setTimeout(() => navigate('/dashboard'), 1000);
+
+      if (isNNSUser) {
+        // Handle NNS order submission
+        const orderData = await createNNSOrder(user.$id, {
+          fullName: nnsForm.contact.fullName,
+          email: user.email,
+          phone: profile?.phone || undefined,
+          course: nnsForm.contact.course,
+          graduationYear: profile?.graduationYear || undefined,
+          designBrief: nnsForm.designBrief,
+        });
+
+        if (orderData) {
+          setConfirmation('Your custom stole order has been submitted! Our design team will contact you soon.');
+          setTimeout(() => navigate('/dashboard'), 1500);
+        } else {
+          throw new Error('Failed to create order');
+        }
+      } else {
+        // Handle UG order submission (existing logic)
+        await saveDesignSubmission(user.$id, {
+          baseColor: form.baseColor,
+          packageChoice: form.packageChoice,
+          quote: form.quote,
+          additionalNotes: form.additionalNotes,
+          consentAccepted: form.consentAccepted,
+          graduatingClass: form.graduatingClass || undefined,
+          facultyLogo: form.facultyLogo || undefined,
+          contact: form.contact,
+        });
+        setConfirmation('Your Custosasho design journey is saved. Redirecting you to the dashboard...');
+        setTimeout(() => navigate('/dashboard'), 1000);
+      }
     } catch (submitError) {
       console.error(submitError);
       setError('We could not save your design journey. Please try again shortly.');
@@ -576,7 +680,216 @@ export function DesignerPage() {
     </motion.div>
   );
 
-  const stepContentMap: Record<StepId, () => JSX.Element> = {
+  // NNS Step Components
+  const renderNNSContact = () => (
+    <motion.div
+      key="contact"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="mx-auto w-full max-w-6xl"
+    >
+      <div className="flex flex-col md:flex-row md:items-start md:gap-8">
+        {/* Form Content */}
+        <div className="flex-1 max-w-2xl space-y-6">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-text-secondary">Full Name</label>
+            <input
+              type="text"
+              value={nnsForm.contact.fullName}
+              readOnly
+              className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated/40 px-4 py-3 text-text-primary opacity-60"
+            />
+            <p className="mt-1 text-xs text-text-secondary">From your profile</p>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-text-secondary">Course</label>
+            <input
+              type="text"
+              value={nnsForm.contact.course}
+              readOnly
+              className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated/40 px-4 py-3 text-text-primary opacity-60"
+            />
+            <p className="mt-1 text-xs text-text-secondary">From your profile</p>
+          </div>
+
+          <div className="mt-8 rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-4">
+            <p className="text-sm text-text-primary">
+              <strong>Custom Stole Price:</strong> ¢120.00 (same as standard package)
+            </p>
+          </div>
+        </div>
+
+        {/* Large NNS Logo - Desktop Only, aligned with form */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="hidden md:flex flex-shrink-0 items-start justify-center mt-4"
+        >
+          <div className="relative md:animate-[circular-motion_8s_linear_infinite]">
+            <img
+              src={nnsLogo}
+              alt="New Nation School"
+              className="h-32 w-32 object-contain"
+            />
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes circular-motion {
+                  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+                  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+                }
+              `
+            }} />
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  const renderNNSBrief = () => (
+    <motion.div
+      key="brief"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="mx-auto w-full max-w-6xl"
+    >
+      <div className="flex flex-col md:flex-row md:items-start md:gap-8">
+        {/* Form Content */}
+        <div className="flex-1 max-w-3xl space-y-6">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-text-secondary">Design Statement</label>
+            <textarea
+              value={nnsForm.designBrief}
+              onChange={(e) => setNnsForm(prev => ({ ...prev, designBrief: e.target.value }))}
+              placeholder="Share your statement with our creative team. Examples: 'GOD DID', 'IT'S BEEN GOD', 'ALL GOD NOT ME', or describe colors, symbols, and design elements you want..."
+              rows={8}
+              className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
+            />
+            <p className="mt-2 text-xs text-text-secondary">
+              {nnsForm.designBrief.length}/500 characters
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border-subtle/40 bg-app-surface/40 p-4">
+            <p className="text-sm text-text-secondary">
+              <strong>Design Process:</strong> Our creative team will review your statement and create a custom design draft.
+              You'll receive updates via email and can request revisions before final production.
+            </p>
+          </div>
+        </div>
+
+        {/* Large NNS Logo - Desktop Only, aligned with form */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="hidden md:flex flex-shrink-0 items-start justify-center mt-4"
+        >
+          <div className="relative md:animate-[circular-motion_8s_linear_infinite]">
+            <img
+              src={nnsLogo}
+              alt="New Nation School"
+              className="h-32 w-32 object-contain"
+            />
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes circular-motion {
+                  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+                  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+                }
+              `
+            }} />
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  const renderNNSReview = () => (
+    <motion.div
+      key="review"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="mx-auto w-full max-w-6xl"
+    >
+      <div className="flex flex-col md:flex-row md:items-start md:gap-8">
+        {/* Form Content */}
+        <div className="flex-1 max-w-2xl space-y-6">
+          <div className="rounded-xl border border-border-subtle/50 bg-app-surface/40 p-6">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">Order Summary</h3>
+
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-text-secondary">Student:</span>
+                <span className="text-text-primary">{nnsForm.contact.fullName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-secondary">Course:</span>
+                <span className="text-text-primary">{nnsForm.contact.course}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-secondary">School:</span>
+                <span className="text-text-primary">New Nation School</span>
+              </div>
+              <div className="border-t border-border-subtle/30 pt-3 flex justify-between font-semibold">
+                <span className="text-text-primary">Total:</span>
+                <span className="text-accent-primary">¢120.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border-subtle/50 bg-app-surface/40 p-6">
+            <h4 className="text-sm font-medium text-text-secondary mb-2">Design Brief:</h4>
+            <p className="text-sm text-text-primary">{nnsForm.designBrief || 'No design brief provided'}</p>
+          </div>
+
+          <div className="rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-4">
+            <p className="text-xs text-text-primary">
+              By submitting this order, you authorize Custosasho to create a custom stole design based on your brief.
+              Our team will contact you with design drafts and delivery timeline.
+            </p>
+          </div>
+        </div>
+
+        {/* Large NNS Logo - Desktop Only, aligned with form */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="hidden md:flex flex-shrink-0 items-start justify-center mt-4"
+        >
+          <div className="relative md:animate-[circular-motion_8s_linear_infinite]">
+            <img
+              src={nnsLogo}
+              alt="New Nation School"
+              className="h-32 w-32 object-contain"
+            />
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes circular-motion {
+                  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+                  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+                }
+              `
+            }} />
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  const stepContentMap: Record<string, () => JSX.Element> = isNNSUser ? {
+    contact: renderNNSContact,
+    brief: renderNNSBrief,
+    review: renderNNSReview,
+  } : {
     welcome: renderWelcome,
     base: renderBaseSelection,
     package: renderPackageSelection,
@@ -588,11 +901,22 @@ export function DesignerPage() {
       <div className="mx-auto flex h-full w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
         <header className="mb-12 flex flex-col gap-6">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-sm uppercase tracking-[0.35em] text-accent-primary">Design Module</h2>
-              <h1 className="mt-3 text-4xl font-display font-bold text-text-primary sm:text-5xl">
-                Custosasho Interactive Experience
-              </h1>
+            <div className="flex items-center gap-4">
+              {isNNSUser && (
+                <div className="flex-shrink-0">
+                  <img
+                    src={nnsLogo}
+                    alt="New Nation School"
+                    className="h-16 w-16 object-contain"
+                  />
+                </div>
+              )}
+              <div>
+                <h2 className="text-sm uppercase tracking-[0.35em] text-accent-primary">Design Module</h2>
+                <h1 className="mt-3 text-4xl font-display font-bold text-text-primary sm:text-5xl">
+                  Custosasho Interactive Experience
+                </h1>
+              </div>
             </div>
             <div className="w-full sm:w-64">
               <div className="h-2 rounded-full bg-app-elevated/60">
