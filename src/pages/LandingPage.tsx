@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, Palette, Truck, Award, Check } from 'lucide-react';
 import { PACKAGES } from '../lib/constants';
 import { useAuth } from '../contexts/AuthContext';
+import { getGalleryImages, GalleryImage } from '../lib/appwrite';
 import logo from '../assets/logo.png';
 import stdImage from '../assets/STD.png';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,8 +17,17 @@ type PackageConfig = (typeof PACKAGES)[PackageKey];
 
 export function LandingPage() {
   const [flippedKey, setFlippedKey] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const { user, profileComplete, setPendingRedirect } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadGalleryImages = async () => {
+      const images = await getGalleryImages();
+      setGalleryImages(images.slice(0, 6)); // Show first 6 images
+    };
+    loadGalleryImages();
+  }, []);
 
   const handleStartDesign = (targetPath: string) => {
     if (!user) {
@@ -422,30 +432,29 @@ export function LandingPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              'https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg',
-              'https://images.pexels.com/photos/1205651/pexels-photo-1205651.jpeg',
-              'https://images.pexels.com/photos/7944214/pexels-photo-7944214.jpeg',
-              'https://images.pexels.com/photos/5905857/pexels-photo-5905857.jpeg',
-              'https://images.pexels.com/photos/5905700/pexels-photo-5905700.jpeg',
-              'https://images.pexels.com/photos/5905709/pexels-photo-5905709.jpeg',
-            ].map((img, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="relative group overflow-hidden rounded-xl aspect-square"
-              >
-                <img
-                  src={img}
-                  alt={`Gallery item ${index + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-app-base/80 via-app-base/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-              </motion.div>
-            ))}
+            {galleryImages.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-text-secondary">
+                Loading gallery...
+              </div>
+            ) : (
+              galleryImages.map((img, index) => (
+                <motion.div
+                  key={img.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  className="relative group overflow-hidden rounded-xl aspect-square"
+                >
+                  <img
+                    src={img.imageUrl}
+                    alt={`Gallery item ${index + 1}`}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-app-base/80 via-app-base/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                </motion.div>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-12">

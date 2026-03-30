@@ -1,4 +1,4 @@
-import { Account, Client, Databases, ID, Models, Query, Teams } from 'appwrite';
+import { Account, Client, Databases, ID, Models, Query, Teams, Storage } from 'appwrite';
 
 const appwriteEndpoint = import.meta.env.VITE_APPWRITE_ENDPOINT;
 const appwriteProjectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
@@ -21,6 +21,7 @@ const client = appwriteEndpoint && appwriteProjectId
 export const account = client ? new Account(client) : null;
 export const databases = client ? new Databases(client) : null;
 export const teams = client ? new Teams(client) : null;
+export const storage = client ? new Storage(client) : null;
 
 export type AppwriteUser = Models.User<Models.Preferences>;
 
@@ -260,6 +261,42 @@ const appwriteNNSOrdersCollectionId = import.meta.env.VITE_APPWRITE_NNS_ORDERS_C
 if (import.meta.env.PROD && !appwriteNNSOrdersCollectionId) {
     console.error('Missing Appwrite NNS Orders collection ID');
 }
+
+// ============================================
+// GALLERY TYPES & CONFIGURATION
+// ============================================
+
+const appwriteGalleryCollectionId = import.meta.env.VITE_APPWRITE_GALLERY_COLLECTION_ID;
+const appwriteGalleryBucketId = import.meta.env.VITE_APPWRITE_GALLERY_BUCKET_ID;
+
+if (import.meta.env.PROD && (!appwriteGalleryCollectionId || !appwriteGalleryBucketId)) {
+    console.error('Missing Appwrite Gallery configuration (collection or bucket)');
+}
+
+export interface GalleryImage {
+    id: string;                    // gallery document ID
+    fileId: string;                // file ID in storage bucket
+    imageUrl: string;              // resolved preview URL
+    order: number;                 // sort order (0, 1, 2, ...)
+    uploadedAt: string;            // ISO datetime
+    uploadedBy: string;            // user ID who uploaded
+}
+
+type RawGalleryDocument = Models.Document & {
+    fileId: string;
+    order: number;
+    uploadedAt: string;
+    uploadedBy: string;
+};
+
+const toGalleryImage = (document: RawGalleryDocument, imageUrl: string): GalleryImage => ({
+    id: document.$id,
+    fileId: document.fileId,
+    imageUrl,
+    order: document.order,
+    uploadedAt: document.uploadedAt,
+    uploadedBy: document.uploadedBy,
+});
 
 export type NNSOrderStatus =
     | 'pending_review'
@@ -941,6 +978,159 @@ export async function isUserInAdminTeam(): Promise<boolean> {
         return !!adminTeam;
     } catch (error) {
         console.error('Error checking admin team membership:', error);
+        return false;
+    }
+}
+
+// ============================================
+// GALLERY MANAGEMENT - CRUD OPERATIONS
+// ============================================
+
+/**
+ * Upload a gallery image file to Appwrite Storage and create metadata document
+ * Returns the created gallery image record
+ */
+export async function uploadGalleryImage(file: File, userId: string): Promise<GalleryImage | null> {
+    if (!storage || !databases) return null;
+    try {
+        // Step 1: Upload file to storage bucket
+        const uploadedFile = await storage.createFile(
+            appwriteGalleryBucketId,
+            ID.unique(),
+            file
+        );
+
+        // Step 2: Get max order to determine next order value
+        const existingImages = await databases.listDocuments<RawGalleryDocument>(
+            appwriteDatabaseId,
+            appwriteGalleryCollectionId,
+            [Query.limit(1), Query.orderDesc('order')]
+        );
+
+        const nextOrder = existingImages.documents.length > 0
+            ? existingImages.documents[0].order + 1
+            : 0;
+
+        // Step 3: Create metadata document
+        const now = new Date().toISOString();
+        const galleryDoc = await databases.createDocument<RawGalleryDocument>(
+            appwriteDatabaseId,
+            appwriteGalleryCollectionId,
+            ID.unique(),
+            {
+                fileId: uploadedFile.$id,
+                order: nextOrder,
+                uploadedAt: now,
+                uploadedBy: userId,
+            }
+        );
+
+        // Step 4: Generate preview URL
+        const imageUrl = storage.getFilePreview(
+            appwriteGalleryBucketId,
+            uploadedFile.$id,
+            400,
+            400
+        ).toString();
+
+        return toGalleryImage(galleryDoc, imageUrl);
+    } catch (error) {
+        console.error('Failed to upload gallery image:', error);
+        return null;
+    }
+}
+
+/**
+ * Get all gallery images sorted by order
+ */
+export async function getGalleryImages(): Promise<GalleryImage[]> {
+    if (!databases || !storage) return [];
+    try {
+        const result = await databases.listDocuments<RawGalleryDocument>(
+            appwriteDatabaseId,
+            appwriteGalleryCollectionId,
+            [Query.orderAsc('order'), Query.limit(1000)]
+        );
+
+        return result.documents.map(doc => {
+            const imageUrl = storage
+                .getFilePreview(appwriteGalleryBucketId, doc.fileId, 400, 400)
+                .toString();
+            return toGalleryImage(doc, imageUrl);
+        });
+    } catch (error) {
+        console.error('Failed to get gallery images:', error);
+        return [];
+    }
+}
+
+/**
+ * Update the order of a single gallery image
+ */
+export async function updateGalleryImageOrder(
+    galleryId: string,
+    newOrder: number
+): Promise<boolean> {
+    if (!databases) return false;
+    try {
+        await databases.updateDocument<RawGalleryDocument>(
+            appwriteDatabaseId,
+            appwriteGalleryCollectionId,
+            galleryId,
+            { order: newOrder }
+        );
+        return true;
+    } catch (error) {
+        console.error('Failed to update gallery image order:', error);
+        return false;
+    }
+}
+
+/**
+ * Update multiple gallery image orders efficiently in batch
+ * Useful for drag-and-drop reordering
+ */
+export async function updateMultipleGalleryImageOrders(
+    updates: Array<{ galleryId: string; newOrder: number }>
+): Promise<boolean> {
+    if (!databases) return false;
+    try {
+        const updatePromises = updates.map(({ galleryId, newOrder }) =>
+            databases.updateDocument<RawGalleryDocument>(
+                appwriteDatabaseId,
+                appwriteGalleryCollectionId,
+                galleryId,
+                { order: newOrder }
+            )
+        );
+
+        await Promise.all(updatePromises);
+        return true;
+    } catch (error) {
+        console.error('Failed to update multiple gallery image orders:', error);
+        return false;
+    }
+}
+
+/**
+ * Delete a gallery image from both storage and database
+ */
+export async function deleteGalleryImage(galleryId: string, fileId: string): Promise<boolean> {
+    if (!storage || !databases) return false;
+    try {
+        // Step 1: Delete from storage bucket
+        await storage.deleteFile(appwriteGalleryBucketId, fileId);
+
+        // Step 2: Delete metadata document
+        await databases.deleteDocument(
+            appwriteDatabaseId,
+            appwriteGalleryCollectionId,
+            galleryId
+        );
+
+        return true;
+    } catch (error) {
+        console.error('Failed to delete gallery image:', error);
         return false;
     }
 }

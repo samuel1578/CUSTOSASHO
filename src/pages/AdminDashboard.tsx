@@ -16,7 +16,8 @@ import {
   Mail,
   Printer,
   AlertTriangle,
-  Calendar
+  Calendar,
+  Image
 } from 'lucide-react';
 import {
   DesignSubmissionRecord,
@@ -40,8 +41,9 @@ import {
   generateStatusUpdateEmail
 } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
+import GalleryManager from '../components/GalleryManager';
 
-type TabType = 'ug' | 'nns';
+type TabType = 'ug' | 'nns' | 'gallery';
 
 const statusLabels: Record<NNSOrderStatus, string> = {
   pending_review: 'Pending Review',
@@ -279,6 +281,21 @@ export function AdminDashboard() {
               )}
             </button>
             <button
+              onClick={() => setActiveTab('gallery')}
+              className={`pb-3 sm:pb-4 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === 'gallery'
+                ? 'text-accent-primary'
+                : 'text-text-secondary hover:text-text-primary'
+                }`}
+            >
+              Gallery
+              {activeTab === 'gallery' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary"
+                />
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab('nns')}
               className={`pb-3 sm:pb-4 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === 'nns'
                 ? 'text-accent-primary'
@@ -303,6 +320,26 @@ export function AdminDashboard() {
                 { icon: ShieldCheck, label: 'Consent Granted', value: ugStats.consented },
                 { icon: Layers, label: 'Standard Requests', value: ugStats.standardCount },
                 { icon: FileText, label: 'Premium Interest', value: ugStats.premiumInterest },
+              ].map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.6 }}
+                  className="rounded-lg sm:rounded-xl border border-border-subtle/40 bg-app-surface/60 p-3 sm:p-6 backdrop-blur transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <stat.icon className="h-6 w-6 sm:h-8 sm:w-8 text-accent-primary" />
+                  </div>
+                  <p className="mb-1 text-xl sm:text-3xl font-bold text-text-primary">{stat.value}</p>
+                  <p className="text-xs sm:text-sm text-text-secondary leading-tight">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          ) : activeTab === 'gallery' ? (
+            <div className="mb-8 sm:mb-12 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: Image, label: 'Gallery Images', value: 'Managed Below' },
               ].map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -416,6 +453,10 @@ export function AdminDashboard() {
                 </div>
               )}
             </div>
+          ) : activeTab === 'gallery' ? (
+            <div className="rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 backdrop-blur transition-colors">
+              <GalleryManager />
+            </div>
           ) : (
             <div className="rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-4 sm:p-6 lg:p-8 backdrop-blur transition-colors">
               <div className="mb-6 flex flex-col gap-4">
@@ -502,10 +543,10 @@ export function AdminDashboard() {
                               {order.deadline && (
                                 <div
                                   className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${isDeadlineOverdue(order.deadline)
-                                      ? 'bg-red-500/20 text-red-600 dark:text-red-400'
-                                      : isDeadlineApproaching(order.deadline)
-                                        ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                                        : 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+                                    ? 'bg-red-500/20 text-red-600 dark:text-red-400'
+                                    : isDeadlineApproaching(order.deadline)
+                                      ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                                      : 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
                                     }`}
                                 >
                                   {isDeadlineOverdue(order.deadline) ? (
@@ -748,10 +789,10 @@ export function AdminDashboard() {
                   />
                   {selectedOrder.deadline && (
                     <div className={`mt-2 text-xs flex items-center gap-2 ${isDeadlineOverdue(selectedOrder.deadline)
-                        ? 'text-red-600 dark:text-red-400'
-                        : isDeadlineApproaching(selectedOrder.deadline)
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-blue-600 dark:text-blue-400'
+                      ? 'text-red-600 dark:text-red-400'
+                      : isDeadlineApproaching(selectedOrder.deadline)
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-blue-600 dark:text-blue-400'
                       }`}>
                       {isDeadlineOverdue(selectedOrder.deadline) ? (
                         <>
@@ -806,8 +847,8 @@ export function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             className={`fixed bottom-4 right-4 z-50 rounded-lg px-6 py-3 shadow-lg ${toast.type === 'success'
-                ? 'bg-green-500/90 text-white'
-                : 'bg-red-500/90 text-white'
+              ? 'bg-green-500/90 text-white'
+              : 'bg-red-500/90 text-white'
               }`}
           >
             <p className="text-sm font-medium">{toast.message}</p>
