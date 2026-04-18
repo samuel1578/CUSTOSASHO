@@ -18,6 +18,7 @@ type PackageConfig = (typeof PACKAGES)[PackageKey];
 export function LandingPage() {
   const [flippedKey, setFlippedKey] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [flippedGalleryImage, setFlippedGalleryImage] = useState<GalleryImage | null>(null);
   const { user, profileComplete, setPendingRedirect } = useAuth();
   const navigate = useNavigate();
 
@@ -53,6 +54,29 @@ export function LandingPage() {
       return 0;
     });
   }, []);
+
+  const getRandomFlipImage = () => {
+    if (galleryImages.length === 0) {
+      return null;
+    }
+
+    if (galleryImages.length === 1) {
+      return galleryImages[0];
+    }
+
+    const currentId = flippedGalleryImage?.id;
+    const candidatePool = currentId
+      ? galleryImages.filter((image) => image.id !== currentId)
+      : galleryImages;
+    const randomIndex = Math.floor(Math.random() * candidatePool.length);
+    return candidatePool[randomIndex] ?? galleryImages[0];
+  };
+
+  const handleFlipToSee = (key: PackageKey) => {
+    const nextImage = getRandomFlipImage();
+    setFlippedGalleryImage(nextImage);
+    setFlippedKey(key);
+  };
 
   const renderPackageCard = (
     [key, pkg]: [PackageKey, PackageConfig],
@@ -94,7 +118,7 @@ export function LandingPage() {
           <h3 className="mb-2 text-2xl font-display font-bold text-text-primary">{pkg.name}</h3>
           <div className="flex items-baseline justify-center">
             {pkg.available ? (
-              <span className="text-5xl font-bold text-accent-primary">{pkg.price} CEDIS</span>
+              <span className="text-5xl font-bold text-accent-primary">¢{pkg.price}</span>
             ) : (
               <span className="rounded-full bg-accent-primary/10 px-3 py-1 text-sm font-semibold text-accent-primary/80">
                 COMING SOON
@@ -108,7 +132,7 @@ export function LandingPage() {
             {flippedKey === key ? (
               <div className="mb-6 flex-1 overflow-visible">
                 <img
-                  src={stdImage}
+                  src={flippedGalleryImage?.imageUrl || stdImage}
                   alt="Standard preview"
                   className="mx-auto h-auto max-h-[420px] w-full rounded-lg object-contain"
                 />
@@ -141,7 +165,7 @@ export function LandingPage() {
                     Get Started
                   </button>
                   <button
-                    onClick={() => setFlippedKey(key)}
+                    onClick={() => handleFlipToSee(key)}
                     className="w-full rounded-lg border border-accent-primary py-3 font-semibold text-accent-primary transition-all hover:bg-accent-primary/10 sm:w-40"
                   >
                     Flip to See

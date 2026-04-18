@@ -4,101 +4,101 @@ import { NNSOrderRecord } from './appwrite';
  * Copy text to clipboard
  */
 export const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    console.error('Failed to copy:', error);
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
     try {
-        await navigator.clipboard.writeText(text);
-        return true;
-    } catch (error) {
-        console.error('Failed to copy:', error);
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            return true;
-        } catch (err) {
-            document.body.removeChild(textArea);
-            return false;
-        }
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    } catch (err) {
+      document.body.removeChild(textArea);
+      return false;
     }
+  }
 };
 
 /**
  * Check if deadline is overdue
  */
 export const isDeadlineOverdue = (deadline: string | null): boolean => {
-    if (!deadline) return false;
-    return new Date(deadline) < new Date();
+  if (!deadline) return false;
+  return new Date(deadline) < new Date();
 };
 
 /**
  * Check if deadline is approaching (within 3 days)
  */
 export const isDeadlineApproaching = (deadline: string | null): boolean => {
-    if (!deadline) return false;
-    const deadlineDate = new Date(deadline);
-    const today = new Date();
-    const threeDaysFromNow = new Date();
-    threeDaysFromNow.setDate(today.getDate() + 3);
+  if (!deadline) return false;
+  const deadlineDate = new Date(deadline);
+  const today = new Date();
+  const threeDaysFromNow = new Date();
+  threeDaysFromNow.setDate(today.getDate() + 3);
 
-    return deadlineDate > today && deadlineDate <= threeDaysFromNow;
+  return deadlineDate > today && deadlineDate <= threeDaysFromNow;
 };
 
 /**
  * Format deadline display
  */
 export const formatDeadline = (deadline: string | null): string => {
-    if (!deadline) return 'No deadline';
+  if (!deadline) return 'No deadline';
 
-    const date = new Date(deadline);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
+  const date = new Date(deadline);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
 
-    const diffTime = date.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffTime = date.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) {
-        return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
-    } else if (diffDays === 0) {
-        return 'Due today';
-    } else if (diffDays === 1) {
-        return 'Due tomorrow';
-    } else if (diffDays <= 7) {
-        return `Due in ${diffDays} days`;
-    } else {
-        return date.toLocaleDateString();
-    }
+  if (diffDays < 0) {
+    return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+  } else if (diffDays === 0) {
+    return 'Due today';
+  } else if (diffDays === 1) {
+    return 'Due tomorrow';
+  } else if (diffDays <= 7) {
+    return `Due in ${diffDays} days`;
+  } else {
+    return date.toLocaleDateString();
+  }
 };
 
 /**
  * Print order details
  */
 export const printOrderDetails = (order: NNSOrderRecord) => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
 
-    const statusLabels: Record<string, string> = {
-        pending_review: 'Pending Review',
-        in_design: 'In Design',
-        design_complete: 'Design Complete',
-        awaiting_approval: 'Awaiting Approval',
-        approved: 'Approved',
-        revision_requested: 'Revision Requested',
-        in_production: 'In Production',
-        quality_check: 'Quality Check',
-        ready_for_pickup: 'Ready for Pickup',
-        out_for_delivery: 'Out for Delivery',
-        delivered: 'Delivered',
-        cancelled: 'Cancelled',
-        on_hold: 'On Hold',
-    };
+  const statusLabels: Record<string, string> = {
+    pending_review: 'Pending Review',
+    in_design: 'In Design',
+    design_complete: 'Design Complete',
+    awaiting_approval: 'Awaiting Approval',
+    approved: 'Approved',
+    revision_requested: 'Revision Requested',
+    in_production: 'In Production',
+    quality_check: 'Quality Check',
+    ready_for_pickup: 'Ready for Pickup',
+    out_for_delivery: 'Out for Delivery',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled',
+    on_hold: 'On Hold',
+  };
 
-    const html = `
+  const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -199,7 +199,7 @@ export const printOrderDetails = (order: NNSOrderRecord) => {
           <tr><td class="label">Order ID:</td><td>${order.id}</td></tr>
           <tr><td class="label">Status:</td><td><strong>${statusLabels[order.status] || order.status}</strong></td></tr>
           <tr><td class="label">Priority:</td><td style="text-transform: capitalize;">${order.priority}</td></tr>
-          <tr><td class="label">Price:</td><td><strong>$${order.price}</strong></td></tr>
+          <tr><td class="label">Price:</td><td><strong>¢${order.price}</strong></td></tr>
           <tr><td class="label">Payment Status:</td><td style="text-transform: capitalize;">${order.paymentStatus}</td></tr>
           ${order.paymentMethod ? `<tr><td class="label">Payment Method:</td><td>${order.paymentMethod}</td></tr>` : ''}
           <tr><td class="label">Delivery Method:</td><td style="text-transform: capitalize;">${order.deliveryMethod}</td></tr>
@@ -232,30 +232,30 @@ export const printOrderDetails = (order: NNSOrderRecord) => {
     </html>
   `;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
+  printWindow.document.write(html);
+  printWindow.document.close();
 };
 
 /**
  * Generate email notification template
  */
 export const generateStatusUpdateEmail = (order: NNSOrderRecord, newStatus: string): string => {
-    const statusMessages: Record<string, string> = {
-        'pending_review': 'Your order is being reviewed by our team.',
-        'in_design': 'Our designers are working on your custom stole!',
-        'design_complete': 'Your design is complete and awaiting your approval.',
-        'awaiting_approval': 'Please review and approve your design.',
-        'approved': 'Design approved! Moving to production.',
-        'in_production': 'Your stole is being crafted.',
-        'quality_check': 'Final quality inspection in progress.',
-        'ready_for_pickup': 'Your order is ready for pickup!',
-        'out_for_delivery': 'Your order is on the way!',
-        'delivered': 'Order delivered successfully!',
-    };
+  const statusMessages: Record<string, string> = {
+    'pending_review': 'Your order is being reviewed by our team.',
+    'in_design': 'Our designers are working on your custom stole!',
+    'design_complete': 'Your design is complete and awaiting your approval.',
+    'awaiting_approval': 'Please review and approve your design.',
+    'approved': 'Design approved! Moving to production.',
+    'in_production': 'Your stole is being crafted.',
+    'quality_check': 'Final quality inspection in progress.',
+    'ready_for_pickup': 'Your order is ready for pickup!',
+    'out_for_delivery': 'Your order is on the way!',
+    'delivered': 'Order delivered successfully!',
+  };
 
-    const statusLabel = newStatus.replace(/_/g, ' ').toUpperCase();
+  const statusLabel = newStatus.replace(/_/g, ' ').toUpperCase();
 
-    return `Dear ${order.fullName},
+  return `Dear ${order.fullName},
 
 Great news! Your custom stole order has been updated.
 
@@ -268,7 +268,7 @@ ORDER DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Order ID: #${order.id.slice(0, 8)}
 Course: ${order.course}
-Price: $${order.price}
+Price: ¢${order.price}
 ${order.trackingNumber ? `Tracking Number: ${order.trackingNumber}` : ''}
 ${order.deadline ? `Expected Completion: ${new Date(order.deadline).toLocaleDateString()}` : ''}
 

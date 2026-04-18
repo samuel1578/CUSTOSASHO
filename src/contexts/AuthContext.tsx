@@ -32,8 +32,8 @@ const isProfileComplete = (profile: ProfileRecord | null) => {
   const isSimpleInputSchool = profile.university && SIMPLE_INPUT_SCHOOLS.includes(profile.university as any);
 
   if (isSimpleInputSchool) {
-    // For simple input schools, require course field
-    return trimValue(profile.course) !== '';
+    // For simple input schools, require course and gender fields
+    return trimValue(profile.course) !== '' && trimValue(profile.gender) !== '';
   } else {
     // For University of Ghana, require college and programme
     return trimValue(profile.college) !== '' && trimValue(profile.programme) !== '';

@@ -361,7 +361,7 @@ export function AdminDashboard() {
               {[
                 { icon: Package, label: 'Total Orders', value: nnsStats.totalOrders },
                 { icon: Clock, label: 'Active Orders', value: nnsStats.activeOrders },
-                { icon: DollarSign, label: 'Revenue', value: `$${nnsStats.revenue}` },
+                { icon: DollarSign, label: 'Revenue', value: `¢${nnsStats.revenue}` },
                 { icon: Truck, label: 'In Production', value: nnsStats.inProduction },
               ].map((stat, index) => (
                 <motion.div
@@ -534,6 +534,9 @@ export function AdminDashboard() {
                               <p className="mt-1 text-xs sm:text-sm text-text-secondary break-words">
                                 {order.course}
                               </p>
+                              {order.selectedGender && (
+                                <p className="text-xs text-text-secondary/80 capitalize">Gender: {order.selectedGender}</p>
+                              )}
                               <p className="text-xs text-text-secondary/70">{order.school}</p>
                             </div>
                             <div className="self-start">
@@ -564,7 +567,7 @@ export function AdminDashboard() {
                         <div className="flex items-center gap-3 sm:gap-6 text-center">
                           <div className="flex-1">
                             <p className="text-[10px] sm:text-xs text-text-secondary">Price</p>
-                            <p className="text-sm sm:text-lg font-semibold text-text-primary">${order.price}</p>
+                            <p className="text-sm sm:text-lg font-semibold text-text-primary">¢{order.price}</p>
                           </div>
                           <div className="flex-1">
                             <p className="text-[10px] sm:text-xs text-text-secondary">Priority</p>
@@ -682,6 +685,9 @@ export function AdminDashboard() {
                     <p className="text-xs sm:text-sm text-text-secondary break-all">{selectedOrder.email}</p>
                     {selectedOrder.phone && <p className="text-xs sm:text-sm text-text-secondary">{selectedOrder.phone}</p>}
                     <p className="mt-2 text-xs sm:text-sm text-text-secondary">{selectedOrder.course}</p>
+                    {selectedOrder.selectedGender && (
+                      <p className="text-xs sm:text-sm text-text-secondary capitalize">Gender: {selectedOrder.selectedGender}</p>
+                    )}
                     {selectedOrder.graduationYear && (
                       <p className="text-xs sm:text-sm text-text-secondary">Graduating {selectedOrder.graduationYear}</p>
                     )}
@@ -754,7 +760,7 @@ export function AdminDashboard() {
 
                 <div className="grid gap-4 sm:gap-4 sm:gap-6 lg:grid-cols-2">
                   <div className="rounded-lg sm:rounded-xl border border-border-subtle/40 bg-app-elevated/60 p-4 sm:p-5">
-                    <p className="mb-2 sm:mb-3 text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-secondary/70">Price ($)</p>
+                    <p className="mb-2 sm:mb-3 text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-secondary/70">Price (¢)</p>
                     <input
                       type="number"
                       value={selectedOrder.price}

@@ -38,7 +38,7 @@ export function PackagesPage() {
               <div className="text-center mb-6">
                 <h3 className="text-3xl font-display font-bold text-white mb-2">{pkg.name}</h3>
                 <div className="flex items-baseline justify-center mb-4">
-                  <span className="text-5xl font-bold text-gold-400">${pkg.price}</span>
+                  <span className="text-5xl font-bold text-gold-400">¢{pkg.price}</span>
                 </div>
               </div>
 

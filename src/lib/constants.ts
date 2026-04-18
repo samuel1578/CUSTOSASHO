@@ -17,7 +17,7 @@ export const PACKAGES = {
   },
   standard: {
     name: 'Standard Stole',
-    price: 120,
+    price: 150,
     available: true,
     features: [
       'Black base with signature motif placement',

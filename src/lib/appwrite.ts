@@ -29,6 +29,7 @@ type RawProfileDocument = Models.Document & {
     userId: string;
     fullName?: string;
     role?: string;
+    gender?: 'male' | 'female' | null;
     college?: string | null;
     university?: string | null;
     programme?: string | null;
@@ -43,6 +44,7 @@ export interface ProfileRecord {
     userId: string;
     fullName: string | null;
     role: 'user' | 'admin';
+    gender: 'male' | 'female' | null;
     college: string | null;
     university: string | null;
     programme: string | null;
@@ -57,6 +59,7 @@ export interface ProfileRecord {
 export interface ProfileUpsertInput {
     fullName?: string | null;
     role?: 'user' | 'admin';
+    gender?: 'male' | 'female' | null;
     college?: string | null;
     university?: string | null;
     programme?: string | null;
@@ -71,6 +74,7 @@ const toProfileRecord = (document: RawProfileDocument): ProfileRecord => ({
     userId: document.userId,
     fullName: document.fullName ?? null,
     role: document.role === 'admin' ? 'admin' : 'user',
+    gender: document.gender ?? null,
     college: document.college ?? null,
     university: document.university ?? null,
     course: document.course ?? null,
@@ -85,6 +89,7 @@ const toProfileRecord = (document: RawProfileDocument): ProfileRecord => ({
 const serializeProfileInput = (input: ProfileUpsertInput) => ({
     ...(input.fullName !== undefined ? { fullName: input.fullName } : {}),
     ...(input.role !== undefined ? { role: input.role } : {}),
+    ...(input.gender !== undefined ? { gender: input.gender } : {}),
     ...(input.college !== undefined ? { college: input.college } : {}),
     ...(input.university !== undefined ? { university: input.university } : {}),
     ...(input.programme !== undefined ? { programme: input.programme } : {}),
@@ -134,6 +139,7 @@ export async function upsertProfile(userId: string, input: ProfileUpsertInput): 
             userId,
             fullName: input.fullName ?? '',
             role: input.role ?? 'user',
+            gender: input.gender ?? null,
             college: input.college ?? '',
             university: input.university ?? '',
             programme: input.programme ?? '',
@@ -349,6 +355,7 @@ type RawNNSOrderDocument = Models.Document & {
     course: string;
     school: string;
     graduationYear?: string | null;
+    selectedGender?: 'male' | 'female' | null;
     designBrief: string;
     price: number;
     status: NNSOrderStatus;
@@ -384,6 +391,7 @@ export interface NNSOrderRecord {
     course: string;
     school: string;
     graduationYear: string | null;
+    selectedGender: 'male' | 'female' | null;
     designBrief: string;
     price: number;
     status: NNSOrderStatus;
@@ -418,6 +426,7 @@ export interface NNSOrderCreateInput {
     phone?: string;
     course: string;
     graduationYear?: string;
+    selectedGender?: 'male' | 'female';
     designBrief: string;
 }
 
@@ -426,6 +435,7 @@ export interface NNSOrderUpdateInput {
     phone?: string;
     course?: string;
     graduationYear?: string;
+    selectedGender?: 'male' | 'female';
     designBrief?: string;
     price?: number;
     status?: NNSOrderStatus;
@@ -481,6 +491,7 @@ const toNNSOrderRecord = (document: RawNNSOrderDocument): NNSOrderRecord => ({
     course: document.course,
     school: document.school,
     graduationYear: document.graduationYear ?? null,
+    selectedGender: document.selectedGender ?? null,
     designBrief: document.designBrief,
     price: document.price,
     status: document.status,
@@ -517,6 +528,7 @@ const serializeNNSOrderUpdate = (input: NNSOrderUpdateInput) => {
     if (input.phone !== undefined) payload.phone = input.phone;
     if (input.course !== undefined) payload.course = input.course;
     if (input.graduationYear !== undefined) payload.graduationYear = input.graduationYear;
+    if (input.selectedGender !== undefined) payload.selectedGender = input.selectedGender;
     if (input.designBrief !== undefined) payload.designBrief = input.designBrief;
     if (input.price !== undefined) payload.price = input.price;
     if (input.status !== undefined) payload.status = input.status;
@@ -565,8 +577,9 @@ export async function createNNSOrder(
             course: input.course,
             school: 'New Nation School',
             graduationYear: input.graduationYear ?? '',
+            selectedGender: input.selectedGender ?? null,
             designBrief: input.designBrief,
-            price: 120,
+            price: 150,
             status: 'pending_review' as NNSOrderStatus,
             statusHistory: JSON.stringify([initialStatusHistory]),
             submittedAt: now,

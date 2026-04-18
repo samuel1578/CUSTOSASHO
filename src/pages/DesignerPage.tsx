@@ -9,6 +9,8 @@ import blackBasePreview from '../assets/blckbse.jpg';
 import yellowBasePreview from '../assets/yellowbse.png';
 import brandLogo from '../assets/logo.png';
 import nnsLogo from '../assets/nns.png';
+import nnsMaleImage from '../assets/nnsmale.jpeg';
+import nnsFemaleImage from '../assets/nnsfem.jpeg';
 
 type StepId = 'welcome' | 'base' | 'package' | 'consent';
 type NNSStepId = 'contact' | 'brief' | 'review';
@@ -159,6 +161,7 @@ interface DesignerFormState {
 
 interface NNSFormState {
   designBrief: string;
+  selectedGender: 'male' | 'female' | '';
   contact: {
     fullName: string;
     course: string;
@@ -192,6 +195,7 @@ export function DesignerPage() {
   });
   const [nnsForm, setNnsForm] = useState<NNSFormState>({
     designBrief: '',
+    selectedGender: '',
     contact: {
       fullName: '',
       course: '',
@@ -216,6 +220,7 @@ export function DesignerPage() {
       // Update NNS form with profile data
       setNnsForm((prev) => ({
         ...prev,
+        selectedGender: prev.selectedGender || profile?.gender || '',
         contact: {
           fullName: prev.contact.fullName || profile?.fullName || user.name || user.email || '',
           course: prev.contact.course || profile?.course || profile?.programme || '',
@@ -276,13 +281,16 @@ export function DesignerPage() {
           if (!nnsForm.designBrief.trim()) {
             return 'Please provide a design brief for our creative team.';
           }
+          if (!nnsForm.selectedGender) {
+            return 'Please select your gender to preview your stole reference image.';
+          }
           if (nnsForm.designBrief.length > 500) {
             return 'Design brief must be less than 500 characters.';
           }
           break;
         case 'review':
           // Final validation
-          if (!nnsForm.contact.fullName || !nnsForm.contact.course || !nnsForm.designBrief.trim()) {
+          if (!nnsForm.contact.fullName || !nnsForm.contact.course || !nnsForm.designBrief.trim() || !nnsForm.selectedGender) {
             return 'Please complete all required information.';
           }
           break;
@@ -363,6 +371,7 @@ export function DesignerPage() {
           phone: profile?.phone || undefined,
           course: nnsForm.contact.course,
           graduationYear: profile?.graduationYear || undefined,
+          selectedGender: nnsForm.selectedGender || undefined,
           designBrief: nnsForm.designBrief,
         });
 
@@ -717,7 +726,7 @@ export function DesignerPage() {
 
           <div className="mt-8 rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-4">
             <p className="text-sm text-text-primary">
-              <strong>Custom Stole Price:</strong> ¢120.00 (same as standard package)
+              <strong>Custom Stole Price:</strong> ¢150.00 (same as standard package)
             </p>
           </div>
         </div>
@@ -783,27 +792,53 @@ export function DesignerPage() {
           </div>
         </div>
 
-        {/* Large NNS Logo - Desktop Only, aligned with form */}
+        {/* Gender-based reference preview */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="hidden md:flex flex-shrink-0 items-start justify-center mt-4"
+          className="mt-6 w-full md:mt-0 md:w-[320px] md:flex-shrink-0"
         >
-          <div className="relative md:animate-[circular-motion_8s_linear_infinite]">
-            <img
-              src={nnsLogo}
-              alt="New Nation School"
-              className="h-32 w-32 object-contain"
-            />
-            <style dangerouslySetInnerHTML={{
-              __html: `
-                @keyframes circular-motion {
-                  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
-                  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
-                }
-              `
-            }} />
+          <div className="overflow-hidden rounded-2xl border border-border-subtle/50 bg-app-surface/60 p-3">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="text-xs uppercase tracking-[0.22em] text-text-secondary/80">Reference Preview</div>
+              <div className="inline-flex rounded-lg border border-border-subtle/50 bg-app-elevated/70 p-1">
+                <button
+                  type="button"
+                  onClick={() => setNnsForm(prev => ({ ...prev, selectedGender: 'male' }))}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${nnsForm.selectedGender === 'male'
+                    ? 'bg-accent-primary text-text-inverted'
+                    : 'text-text-secondary hover:text-text-primary'
+                    }`}
+                >
+                  Male
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNnsForm(prev => ({ ...prev, selectedGender: 'female' }))}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${nnsForm.selectedGender === 'female'
+                    ? 'bg-accent-primary text-text-inverted'
+                    : 'text-text-secondary hover:text-text-primary'
+                    }`}
+                >
+                  Female
+                </button>
+              </div>
+            </div>
+            <div className="h-72 w-full overflow-hidden rounded-xl border border-border-subtle/40 bg-app-elevated sm:h-80 md:h-[420px]">
+              <img
+                src={nnsForm.selectedGender === 'female' ? nnsFemaleImage : nnsMaleImage}
+                alt={nnsForm.selectedGender === 'female' ? 'Female stole reference' : 'Male stole reference'}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <p className="mt-3 text-xs text-text-secondary">
+              {nnsForm.selectedGender === 'female'
+                ? 'Female preview selected.'
+                : nnsForm.selectedGender === 'male'
+                  ? 'Male preview selected.'
+                  : 'Use the toggle to preview either version.'}
+            </p>
           </div>
         </motion.div>
       </div>
@@ -835,12 +870,16 @@ export function DesignerPage() {
                 <span className="text-text-primary">{nnsForm.contact.course}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-text-secondary">Gender:</span>
+                <span className="text-text-primary capitalize">{nnsForm.selectedGender || 'Not selected'}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-text-secondary">School:</span>
                 <span className="text-text-primary">New Nation School</span>
               </div>
               <div className="border-t border-border-subtle/30 pt-3 flex justify-between font-semibold">
                 <span className="text-text-primary">Total:</span>
-                <span className="text-accent-primary">¢120.00</span>
+                <span className="text-accent-primary">¢150.00</span>
               </div>
             </div>
           </div>
@@ -858,27 +897,21 @@ export function DesignerPage() {
           </div>
         </div>
 
-        {/* Large NNS Logo - Desktop Only, aligned with form */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="hidden md:flex flex-shrink-0 items-start justify-center mt-4"
+          className="mt-6 w-full md:mt-0 md:w-[320px] md:flex-shrink-0"
         >
-          <div className="relative md:animate-[circular-motion_8s_linear_infinite]">
-            <img
-              src={nnsLogo}
-              alt="New Nation School"
-              className="h-32 w-32 object-contain"
-            />
-            <style dangerouslySetInnerHTML={{
-              __html: `
-                @keyframes circular-motion {
-                  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
-                  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
-                }
-              `
-            }} />
+          <div className="overflow-hidden rounded-2xl border border-border-subtle/50 bg-app-surface/60 p-3">
+            <div className="mb-3 text-xs uppercase tracking-[0.22em] text-text-secondary/80">Confirmed Preview</div>
+            <div className="h-72 w-full overflow-hidden rounded-xl border border-border-subtle/40 bg-app-elevated sm:h-80 md:h-[420px]">
+              <img
+                src={nnsForm.selectedGender === 'female' ? nnsFemaleImage : nnsMaleImage}
+                alt={nnsForm.selectedGender === 'female' ? 'Female stole reference' : 'Male stole reference'}
+                className="h-full w-full object-cover"
+              />
+            </div>
           </div>
         </motion.div>
       </div>
@@ -984,4 +1017,4 @@ export function DesignerPage() {
       </div>
     </div>
   );
-}
+};

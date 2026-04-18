@@ -29,6 +29,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
     const [university, setUniversity] = useState(() => profile?.university ?? '');
     const [programme, setProgramme] = useState(() => profile?.programme ?? '');
     const [course, setCourse] = useState(() => profile?.course ?? ''); // For simple input schools
+    const [gender, setGender] = useState<'male' | 'female' | ''>(() => profile?.gender ?? '');
     const [graduationYear, setGraduationYear] = useState('');
     const [phone, setPhone] = useState('');
     const [error, setError] = useState('');
@@ -75,6 +76,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
             setUniversity(profile.university ?? '');
             setProgramme(profile.programme ?? '');
             setCourse(profile.course ?? '');
+            setGender(profile.gender ?? '');
             setGraduationYear(profile.graduationYear ?? '');
             setPhone(profile.phone ?? '');
         }
@@ -132,7 +134,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         // Validate required fields based on school type
         let requiredFields: string[];
         if (isSimpleInputSchool) {
-            requiredFields = [fullName, university, course, graduationYear];
+            requiredFields = [fullName, university, course, graduationYear, gender];
         } else {
             requiredFields = [fullName, university, college, programme, graduationYear];
         }
@@ -150,6 +152,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
             university: trim(university),
             graduationYear: trim(graduationYear),
             phone: trim(phone) || null,
+            gender: gender || null,
             onboardingComplete: true,
         };
 
@@ -356,6 +359,27 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                         placeholder="+233 123 456 789"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-text-secondary">
+                                    Gender {isSimpleInputSchool ? '' : <span className="text-xs font-normal text-text-secondary/70">(optional)</span>}
+                                </label>
+                                <div className="relative">
+                                    <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />
+                                    <select
+                                        value={gender}
+                                        onChange={(event) => setGender(event.target.value as 'male' | 'female' | '')}
+                                        className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
+                                    >
+                                        <option value="" disabled>
+                                            Select gender
+                                        </option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                </div>
+                                {isSimpleInputSchool && <p className="mt-1 text-xs text-text-secondary">Required for New Nation stole preview</p>}
                             </div>
 
                             {error && <p className="text-sm text-red-400">{error}</p>}

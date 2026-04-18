@@ -217,8 +217,8 @@ export function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
               className={`mb-8 rounded-3xl border p-8 backdrop-blur transition-colors ${hasConsent
-                  ? 'border-green-500/40 bg-green-500/5'
-                  : 'border-amber-500/40 bg-amber-500/5'
+                ? 'border-green-500/40 bg-green-500/5'
+                : 'border-amber-500/40 bg-amber-500/5'
                 }`}
             >
               <div className="flex items-center justify-between">
@@ -308,7 +308,7 @@ export function DashboardPage() {
                         </div>
                         <div className="rounded-xl border border-border-subtle/50 bg-app-elevated/70 px-4 py-3">
                           <p className="text-xs uppercase tracking-[0.25em] text-text-secondary/70">Price</p>
-                          <p className="mt-1 text-2xl font-bold text-accent-primary">GH₵ {order.price}</p>
+                          <p className="mt-1 text-2xl font-bold text-accent-primary">¢{order.price}</p>
                         </div>
                       </div>
 

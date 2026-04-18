@@ -9,6 +9,7 @@ interface MobileMenuItem {
     label: string;
     description?: string;
     onSelect: () => void;
+    isActive?: boolean;
     variant?: 'default' | 'primary';
     disabled?: boolean;
 }
@@ -193,13 +194,17 @@ export function MobileMenu({
                                                 type="button"
                                                 onClick={item.onSelect}
                                                 disabled={item.disabled}
-                                                className="group relative flex w/full items-center justify-between overflow-hidden rounded-xl px-5 py-4 text-left text-text-inverted transition-all focus:outline-none focus:ring-2 focus:ring-accent-secondary focus:ring-offset-2 focus:ring-offset-app-base disabled:cursor-not-allowed disabled:opacity-50 btn-accent-gradient"
+                                                className={`group relative flex w/full items-center justify-between overflow-hidden rounded-xl px-5 py-4 text-left text-text-inverted transition-all focus:outline-none focus:ring-2 focus:ring-accent-secondary focus:ring-offset-2 focus:ring-offset-app-base disabled:cursor-not-allowed disabled:opacity-50 btn-accent-gradient ${item.isActive
+                                                    ? 'ring-2 ring-accent-secondary/80 ring-offset-2 ring-offset-app-base'
+                                                    : ''
+                                                    }`}
                                             >
                                                 <div>
                                                     <span className="text-lg font-semibold">{item.label}</span>
                                                     {item.description && (
                                                         <p className="mt-1 text-sm text-text-inverted/80">{item.description}</p>
                                                     )}
+                                                    {item.isActive && <div className="mt-2 h-0.5 w-10 rounded-full bg-text-inverted/90" />}
                                                 </div>
                                                 <motion.span
                                                     initial={{ x: -8, opacity: 0 }}
@@ -216,13 +221,17 @@ export function MobileMenu({
                                                 type="button"
                                                 onClick={item.onSelect}
                                                 disabled={item.disabled}
-                                                className="group flex w/full items-start justify-between rounded-xl border border-border-subtle/40 bg-app-surface/50 px-5 py-4 text-left text-text-primary transition-all hover:border-accent-primary/40 hover:bg-app-surface/70 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-app-base disabled:cursor-not-allowed disabled:opacity-60"
+                                                className={`group flex w/full items-start justify-between rounded-xl border px-5 py-4 text-left text-text-primary transition-all focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-app-base disabled:cursor-not-allowed disabled:opacity-60 ${item.isActive
+                                                    ? 'border-accent-primary/70 bg-accent-primary/10'
+                                                    : 'border-border-subtle/40 bg-app-surface/50 hover:border-accent-primary/40 hover:bg-app-surface/70'
+                                                    }`}
                                             >
                                                 <div>
                                                     <span className="text-lg font-medium tracking-wide">{item.label}</span>
                                                     {item.description && (
                                                         <p className="mt-1 text-sm text-text-secondary">{item.description}</p>
                                                     )}
+                                                    {item.isActive && <div className="mt-2 h-0.5 w-10 rounded-full bg-accent-primary" />}
                                                 </div>
                                                 <motion.span
                                                     initial={{ x: -6, opacity: 0 }}

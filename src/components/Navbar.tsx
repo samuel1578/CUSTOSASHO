@@ -10,7 +10,7 @@ const MENU_CLOSE_DELAY_MS = 340;
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, profile, profileComplete, signOut, setPendingRedirect, isAdmin } = useAuth();
+  const { user, profileComplete, signOut, setPendingRedirect, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const reactId = useId();
@@ -81,30 +81,44 @@ export function Navbar() {
     [],
   );
 
+  const isPathActive = useCallback(
+    (path: string) => {
+      if (path === '/') {
+        return location.pathname === '/';
+      }
+      return location.pathname.startsWith(path);
+    },
+    [location.pathname],
+  );
+
   const mobileMenuItems = useMemo(() => {
     const items = [
       {
         id: 'home',
         label: 'Home',
         description: 'Where stories begin',
+        isActive: isPathActive('/'),
         onSelect: () => runAfterMenuClose(() => navigate('/')),
       },
       {
         id: 'gallery',
         label: 'Gallery',
         description: 'Inspiration from our clients',
+        isActive: isPathActive('/gallery'),
         onSelect: () => runAfterMenuClose(() => navigate('/gallery')),
       },
       {
         id: 'about',
         label: 'About',
         description: 'Our story and heritage',
+        isActive: isPathActive('/about'),
         onSelect: () => runAfterMenuClose(() => navigate('/about')),
       },
       {
         id: 'contact',
         label: 'Contact',
         description: "Let's create together",
+        isActive: isPathActive('/contact'),
         onSelect: () => runAfterMenuClose(() => navigate('/contact')),
       },
     ];
@@ -114,6 +128,7 @@ export function Navbar() {
         id: 'dashboard',
         label: isAdmin ? 'Admin' : 'Dashboard',
         description: isAdmin ? 'Manage orders and designs' : 'Continue your journey',
+        isActive: isPathActive(isAdmin ? '/admin' : '/dashboard'),
         onSelect: () => runAfterMenuClose(() => navigate(isAdmin ? '/admin' : '/dashboard')),
       });
 
@@ -121,6 +136,7 @@ export function Navbar() {
         id: 'logout',
         label: 'Logout',
         description: 'Sign out of your account',
+        isActive: false,
         onSelect: () => runAfterMenuClose(() => {
           void handleSignOut();
         }),
@@ -130,6 +146,7 @@ export function Navbar() {
         id: 'login',
         label: 'Login',
         description: 'Access your saved designs',
+        isActive: isPathActive('/login'),
         onSelect: () => runAfterMenuClose(() => navigate('/login')),
       });
     }
@@ -138,11 +155,12 @@ export function Navbar() {
       id: 'designer',
       label: 'Get Started',
       description: 'Launch the stole designer',
+      isActive: isPathActive('/designer'),
       onSelect: () => runAfterMenuClose(() => handleGetStarted()),
     });
 
     return items;
-  }, [handleGetStarted, handleSignOut, navigate, profile?.role, runAfterMenuClose, user]);
+  }, [handleGetStarted, handleSignOut, isAdmin, isPathActive, navigate, runAfterMenuClose, user]);
 
   return (
     <>
@@ -167,7 +185,10 @@ export function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="font-medium text-text-secondary transition-colors hover:text-accent-primary"
+                  className={`relative font-medium transition-colors after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:origin-left after:rounded-full after:bg-accent-primary after:transition-transform after:duration-200 ${isPathActive(link.path)
+                    ? 'text-text-primary after:scale-x-100'
+                    : 'text-text-secondary hover:text-accent-primary after:scale-x-0 hover:after:scale-x-100'
+                    }`}
                 >
                   {link.name}
                 </Link>
@@ -177,7 +198,10 @@ export function Navbar() {
               <>
                 <Link
                   to={isAdmin ? '/admin' : '/dashboard'}
-                  className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors hover:text-accent-primary"
+                  className={`relative rounded-lg px-4 py-2 text-sm font-semibold transition-colors after:absolute after:bottom-0 after:left-4 after:right-4 after:h-0.5 after:origin-left after:rounded-full after:bg-accent-primary after:transition-transform after:duration-200 ${isPathActive(isAdmin ? '/admin' : '/dashboard')
+                    ? 'text-text-primary after:scale-x-100'
+                    : 'text-text-secondary hover:text-accent-primary after:scale-x-0 hover:after:scale-x-100'
+                    }`}
                 >
                   {isAdmin ? 'Admin' : 'Dashboard'}
                 </Link>
@@ -191,7 +215,10 @@ export function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="font-medium text-text-secondary transition-colors hover:text-accent-primary"
+                className={`relative font-medium transition-colors after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:origin-left after:rounded-full after:bg-accent-primary after:transition-transform after:duration-200 ${isPathActive('/login')
+                  ? 'text-text-primary after:scale-x-100'
+                  : 'text-text-secondary hover:text-accent-primary after:scale-x-0 hover:after:scale-x-100'
+                  }`}
               >
                 Login
               </Link>
