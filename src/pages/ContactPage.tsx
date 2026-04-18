@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, Check, AlertCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Check } from 'lucide-react';
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ export function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black pt-28 pb-16">
+    <div className="min-h-screen bg-hero-gradient pt-28 pb-16 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -31,7 +31,7 @@ export function ContactPage() {
         >
           <div className="text-center mb-16">
             <h1 className="text-5xl font-display font-bold text-gold-400 mb-4">Contact Us</h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-text-secondary max-w-2xl mx-auto">
               Have questions? We're here to help bring your vision to life
             </p>
           </div>
@@ -47,13 +47,13 @@ export function ContactPage() {
               {
                 icon: Phone,
                 title: 'Phone',
-                info: '1-800-SASHO-01',
-                subInfo: 'Mon-Fri, 9am-6pm EST',
+                info: '020-555-2252 / 0592299859',
+                subInfo: 'Mon-Fri, 9am-6pm',
               },
               {
                 icon: MapPin,
                 title: 'Location',
-                info: 'Atlanta, GA',
+                info: 'Accra, GH',
                 subInfo: 'Serving nationwide',
               },
             ].map((contact, index) => (
@@ -62,12 +62,12 @@ export function ContactPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 + 0.2, duration: 0.6 }}
-                className="bg-gray-900/50 backdrop-blur border border-gold-500/20 rounded-xl p-8 text-center hover:border-gold-500/40 transition-all"
+                className="bg-app-surface/70 backdrop-blur border border-accent-primary/25 rounded-xl p-8 text-center hover:border-accent-primary/50 transition-all"
               >
                 <contact.icon className="h-12 w-12 text-gold-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">{contact.title}</h3>
+                <h3 className="text-xl font-semibold text-text-primary mb-2">{contact.title}</h3>
                 <p className="text-gold-400 font-medium mb-1">{contact.info}</p>
-                <p className="text-gray-500 text-sm">{contact.subInfo}</p>
+                <p className="text-text-secondary text-sm">{contact.subInfo}</p>
               </motion.div>
             ))}
           </div>
@@ -76,9 +76,9 @@ export function ContactPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="bg-gray-900/50 backdrop-blur border border-gold-500/20 rounded-2xl p-8 max-w-3xl mx-auto"
+            className="bg-app-surface/70 backdrop-blur border border-accent-primary/25 rounded-2xl p-8 max-w-3xl mx-auto"
           >
-            <h2 className="text-2xl font-display font-bold text-white mb-6 text-center">
+            <h2 className="text-2xl font-display font-bold text-text-primary mb-6 text-center">
               Send Us a Message
             </h2>
 
@@ -98,7 +98,7 @@ export function ContactPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-2">
                     Full Name *
                   </label>
                   <input
@@ -107,13 +107,13 @@ export function ContactPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                    className="w-full bg-app-elevated border border-border-subtle rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary transition-all"
                     placeholder="John Doe"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-2">
                     Email Address *
                   </label>
                   <input
@@ -122,7 +122,7 @@ export function ContactPage() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                    className="w-full bg-app-elevated border border-border-subtle rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -130,7 +130,7 @@ export function ContactPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="phone" className="block text-sm font-medium text-text-secondary mb-2">
                     Phone Number
                   </label>
                   <input
@@ -138,13 +138,13 @@ export function ContactPage() {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                    className="w-full bg-app-elevated border border-border-subtle rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary transition-all"
                     placeholder="(555) 123-4567"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="subject" className="block text-sm font-medium text-text-secondary mb-2">
                     Subject *
                   </label>
                   <select
@@ -152,7 +152,7 @@ export function ContactPage() {
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                    className="w-full bg-app-elevated border border-border-subtle rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary transition-all"
                   >
                     <option value="">Select a subject</option>
                     <option value="general">General Inquiry</option>
@@ -165,7 +165,7 @@ export function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="message" className="block text-sm font-medium text-text-secondary mb-2">
                   Message *
                 </label>
                 <textarea
@@ -174,7 +174,7 @@ export function ContactPage() {
                   rows={6}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all resize-none"
+                  className="w-full bg-app-elevated border border-border-subtle rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary transition-all resize-none"
                   placeholder="Tell us about your project or question..."
                 />
               </div>

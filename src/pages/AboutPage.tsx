@@ -1,7 +1,20 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Award, Users, Sparkles } from 'lucide-react';
+import { GalleryImage, getGalleryImages } from '../lib/appwrite';
 
 export function AboutPage() {
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadHeroImage = async () => {
+      const images: GalleryImage[] = await getGalleryImages();
+      setHeroImageUrl(images[1]?.imageUrl ?? null);
+    };
+
+    void loadHeroImage();
+  }, []);
+
   return (
     <div className="min-h-screen bg-app-base pt-28 pb-16 text-text-primary transition-colors">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -50,7 +63,7 @@ export function AboutPage() {
             >
               <div className="aspect-square rounded-2xl overflow-hidden">
                 <img
-                  src="https://images.pexels.com/photos/7944214/pexels-photo-7944214.jpeg"
+                  src={heroImageUrl ?? 'https://images.pexels.com/photos/7944214/pexels-photo-7944214.jpeg'}
                   alt="Graduation celebration"
                   className="w-full h-full object-cover"
                 />

@@ -49,20 +49,20 @@
         --text-primary: 15 23 42;
         --text-secondary: 71 85 105;
         --text-inverted: 255 255 255;
-        --accent-primary: 220 38 38;
-        --accent-secondary: 34 197 94;
+        --accent-primary: 161 113 5;
+        --accent-secondary: 133 94 16;
         --accent-tertiary: 59 130 246;
         --gradient-hero-top: 255 255 255;
         --gradient-hero-mid: 248 250 252;
         --gradient-hero-bottom: 224 231 255;
         --gradient-section-start: 255 255 255;
         --gradient-section-end: 241 245 249;
-        --glow-color: 220 38 38;
-        --button-primary-start: 220 38 38;
-        --button-primary-end: 34 197 94;
-        --heading-gradient-start: 220 38 38;
-        --heading-gradient-mid: 249 115 22;
-        --heading-gradient-end: 34 197 94;
+        --glow-color: 161 113 5;
+        --button-primary-start: 184 134 11;
+        --button-primary-end: 0 0 0;
+        --heading-gradient-start: 184 134 11;
+        --heading-gradient-mid: 133 94 16;
+        --heading-gradient-end: 0 0 0;
     }
 }
 
