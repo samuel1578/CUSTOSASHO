@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getGalleryImages, GalleryImage } from '../lib/appwrite';
 import logo from '../assets/logo.png';
 import stdImage from '../assets/STD.png';
+import ogImage from '../assets/og-image.jpg';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -28,6 +29,30 @@ export function LandingPage() {
       setGalleryImages(images.slice(0, 6)); // Show first 6 images
     };
     loadGalleryImages();
+  }, []);
+
+  useEffect(() => {
+    // Dynamically update Open Graph metadata
+    const metaData = [
+      { property: 'og:title', content: 'CustoSasho - Custom Graduation Stoles' },
+      { property: 'og:description', content: 'Design your custom graduation stole with CustoSasho. Premium quality, kente-inspired designs celebrating African heritage and your unique journey.' },
+      { property: 'og:image', content: ogImage },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:image', content: ogImage },
+      { name: 'description', content: 'Design your custom graduation stole with CustoSasho. Premium quality, kente-inspired designs celebrating African heritage and your unique journey.' }
+    ];
+
+    metaData.forEach(({ property, name, content }) => {
+      const selector = property ? `meta[property="${property}"]` : `meta[name="${name}"]`;
+      let tag = document.querySelector(selector);
+      if (!tag) {
+        tag = document.createElement('meta');
+        if (property) tag.setAttribute('property', property);
+        if (name) tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    });
   }, []);
 
   const handleStartDesign = (targetPath: string) => {
