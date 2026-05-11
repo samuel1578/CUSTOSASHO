@@ -38,7 +38,8 @@ import {
   isDeadlineApproaching,
   formatDeadline,
   printOrderDetails,
-  generateStatusUpdateEmail
+  generateStatusUpdateEmail,
+  setScrollLock
 } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 import GalleryManager from '../components/GalleryManager';
@@ -102,6 +103,15 @@ export function AdminDashboard() {
     business: 'Business Faculty Logo',
     arts: 'Arts Faculty Logo',
   };
+
+  useEffect(() => {
+    if (showOrderModal) {
+      setScrollLock(true);
+    } else {
+      setScrollLock(false);
+    }
+    return () => setScrollLock(false);
+  }, [showOrderModal]);
 
   useEffect(() => {
     loadData();
@@ -244,14 +254,14 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-app-base text-text-primary transition-colors">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-app-base text-text-primary transition-colors">
         <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-accent-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-app-base pt-20 sm:pt-28 pb-16 text-text-primary transition-colors">
+    <div className="min-h-[100dvh] bg-app-base pt-20 sm:pt-28 pb-16 text-text-primary transition-colors">
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -383,7 +393,7 @@ export function AdminDashboard() {
 
           {/* Content Area */}
           {activeTab === 'ug' ? (
-            <div className="rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-4 sm:p-6 lg:p-8 backdrop-blur transition-colors">
+            <div className="min-h-0 rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-4 sm:p-6 lg:p-8 backdrop-blur transition-colors">
               <h2 className="mb-2 text-2xl font-semibold text-text-primary">Design Journeys</h2>
               <p className="mb-8 text-sm text-text-secondary">
                 These records sync directly from the full-screen designer. Use them to brief artisans, follow up with graduates, and plan production.
@@ -454,11 +464,11 @@ export function AdminDashboard() {
               )}
             </div>
           ) : activeTab === 'gallery' ? (
-            <div className="rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 backdrop-blur transition-colors">
+            <div className="min-h-0 rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 backdrop-blur transition-colors">
               <GalleryManager />
             </div>
           ) : (
-            <div className="rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-4 sm:p-6 lg:p-8 backdrop-blur transition-colors">
+            <div className="min-h-0 rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-4 sm:p-6 lg:p-8 backdrop-blur transition-colors">
               <div className="mb-6 flex flex-col gap-4">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">NNS Custom Orders</h2>
@@ -666,7 +676,7 @@ export function AdminDashboard() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-h-[85vh] sm:max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface p-4 sm:p-6 lg:p-8"
+              className="scroll-contain relative flex max-h-[85vh] sm:max-h-[90vh] w-full max-w-4xl flex-col overflow-y-auto rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface p-4 sm:p-6 lg:p-8"
             >
               <button
                 onClick={() => setShowOrderModal(false)}

@@ -37,7 +37,7 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   return (
-    <div className="min-h-screen bg-app-base text-text-primary transition-colors duration-500">
+    <div className="min-h-[100dvh] bg-app-base text-text-primary transition-colors duration-500">
       <Navbar />
       <PageWrapper>
         <Routes>

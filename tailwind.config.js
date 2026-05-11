@@ -11,6 +11,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      screens: {
+        'short': { 'raw': '(max-height: 700px)' },
+      },
       colors: {
         app: {
           base: withOpacity('--app-bg'),

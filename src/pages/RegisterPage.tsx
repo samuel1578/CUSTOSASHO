@@ -48,7 +48,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-section-gradient px-4 py-12 transition-colors">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-section-gradient px-4 py-12 transition-colors">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

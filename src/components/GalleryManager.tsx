@@ -8,6 +8,7 @@ import {
     GalleryImage,
 } from '../lib/appwrite';
 import { getCurrentUser } from '../lib/appwrite';
+import { setScrollLock } from '../lib/utils';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -30,6 +31,15 @@ export const GalleryManager: React.FC = () => {
     useEffect(() => {
         loadGalleryImages();
     }, []);
+
+    useEffect(() => {
+        if (deleteConfirm) {
+            setScrollLock(true);
+        } else {
+            setScrollLock(false);
+        }
+        return () => setScrollLock(false);
+    }, [deleteConfirm]);
 
     const loadGalleryImages = async () => {
         setIsLoading(true);
@@ -259,8 +269,8 @@ export const GalleryManager: React.FC = () => {
                                 onDragLeave={handleDragLeave}
                                 onDrop={(e) => handleDrop(e, index)}
                                 className={`flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-transparent cursor-move hover:border-blue-300 dark:hover:border-blue-600 transition-all ${draggedOverId === img.id
-                                        ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                                        : ''
+                                    ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                    : ''
                                     }`}
                             >
                                 {/* Order Number */}
@@ -339,10 +349,10 @@ export const GalleryManager: React.FC = () => {
                     <div
                         key={toast.id}
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white pointer-events-auto animate-in slide-in-from-right-full ${toast.type === 'success'
-                                ? 'bg-green-500'
-                                : toast.type === 'error'
-                                    ? 'bg-red-500'
-                                    : 'bg-blue-500'
+                            ? 'bg-green-500'
+                            : toast.type === 'error'
+                                ? 'bg-red-500'
+                                : 'bg-blue-500'
                             }`}
                     >
                         {toast.type === 'success' && <CheckCircle size={20} />}

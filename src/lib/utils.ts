@@ -282,3 +282,44 @@ Best regards,
 CustoSasho Team
 Custom Graduation Stoles | Crafted to Represent`;
 };
+
+/**
+ * Scroll to an element with offset and smooth behavior
+ */
+export const scrollToElement = (elementId: string, offset = 100) => {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  const bodyRect = document.body.getBoundingClientRect().top;
+  const elementRect = element.getBoundingClientRect().top;
+  const elementPosition = elementRect - bodyRect;
+  const offsetPosition = elementPosition - offset;
+
+  window.scrollTo({
+    top: offsetPosition,
+    behavior: 'smooth',
+  });
+};
+
+/**
+ * Robust scroll lock for mobile devices
+ */
+export const setScrollLock = (lock: boolean) => {
+  if (typeof document === 'undefined') return;
+
+  const body = document.body;
+  const scrollLockClass = 'scroll-lock';
+
+  if (lock) {
+    // Save current scroll position
+    const scrollY = window.scrollY;
+    body.style.top = `-${scrollY}px`;
+    body.classList.add(scrollLockClass);
+  } else {
+    // Retrieve scroll position
+    const scrollY = Math.abs(parseInt(body.style.top || '0', 10));
+    body.classList.remove(scrollLockClass);
+    body.style.removeProperty('top');
+    window.scrollTo(0, scrollY);
+  }
+};

@@ -245,7 +245,7 @@ export function LandingPage() {
 
   return (
     <div className="bg-app-base text-text-primary transition-colors">
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-hero-gradient"></div>
         <div className="absolute inset-0 opacity-30">
           <div
@@ -258,7 +258,7 @@ export function LandingPage() {
           ></div>
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-32 text-center sm:px-6 lg:px-8">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-32 short:py-16 text-center sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -270,14 +270,14 @@ export function LandingPage() {
               transition={{ duration: 1, repeat: Infinity, repeatType: 'reverse' }}
               className="inline-block mb-2"
             >
-              <img src={logo} alt="Custosasho Logo" width={256} height={256} className="mx-auto" />
+              <img src={logo} alt="Custosasho Logo" className="mx-auto w-48 short:w-32 h-auto" />
             </motion.div>
 
-            <h1 className="mb-2 text-5xl font-display font-bold text-transparent bg-heading-gradient bg-clip-text sm:text-6xl lg:text-7xl">
+            <h1 className="mb-2 text-5xl font-display font-bold text-transparent bg-heading-gradient bg-clip-text sm:text-6xl lg:text-7xl short:text-4xl">
               Crafted to Represent
             </h1>
 
-            <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-text-secondary sm:text-2xl">
+            <p className="mx-auto mb-12 short:mb-6 max-w-3xl text-xl leading-relaxed text-text-secondary sm:text-2xl short:text-lg">
               Honor your heritage and celebrate your achievement with a custom graduation stole that tells your unique story
             </p>
 

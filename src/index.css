@@ -32,10 +32,24 @@
         --heading-gradient-mid: 212 175 55;
         --heading-gradient-end: 234 208 120;
 
-        min-height: 100vh;
+        min-height: 100dvh;
         background-color: rgb(var(--app-bg));
         color: rgb(var(--text-primary));
         transition: background-color 0.4s ease, color 0.4s ease;
+        padding-bottom: env(safe-area-inset-bottom);
+        overscroll-behavior-y: none;
+        /* Prevent scroll chaining at the root */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    body.scroll-lock {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        /* Maintain scroll position if needed, but for now simple fixed is better for iOS */
     }
 
     body[data-theme='light'] {
@@ -88,5 +102,40 @@
                 rgba(var(--heading-gradient-start) / 1),
                 rgba(var(--heading-gradient-mid) / 1),
                 rgba(var(--heading-gradient-end) / 1));
+    }
+
+    .scroll-contain {
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @media (max-height: 700px) {
+        .short-py-16 {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+        }
+
+        .short-py-8 {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .short-gap-4 {
+            gap: 1rem;
+        }
+
+        .short-text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
     }
 }

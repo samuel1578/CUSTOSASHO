@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Shield } from 'lucide-react';
+import { setScrollLock } from '../lib/utils';
 
 interface ConsentModalProps {
     isOpen: boolean;
@@ -11,6 +12,15 @@ interface ConsentModalProps {
 export function ConsentModal({ isOpen, onAccept, onCancel }: ConsentModalProps) {
     const [hasReadTerms, setHasReadTerms] = useState(false);
     const [isAccepted, setIsAccepted] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setScrollLock(true);
+        } else {
+            setScrollLock(false);
+        }
+        return () => setScrollLock(false);
+    }, [isOpen]);
 
     const handleAccept = () => {
         if (isAccepted) {
@@ -44,7 +54,7 @@ export function ConsentModal({ isOpen, onAccept, onCancel }: ConsentModalProps) 
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative z-10 w-full max-w-3xl max-h-[90vh] flex flex-col rounded-3xl border border-border-subtle/40 bg-app-surface shadow-2xl"
+                        className="relative z-10 flex h-full max-h-[90dvh] w-full max-w-3xl flex-col rounded-3xl border border-border-subtle/40 bg-app-surface shadow-2xl overflow-hidden"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between border-b border-border-subtle/40 p-6">
@@ -67,7 +77,7 @@ export function ConsentModal({ isOpen, onAccept, onCancel }: ConsentModalProps) 
 
                         {/* Scrollable Content */}
                         <div
-                            className="flex-1 overflow-y-auto p-6 space-y-6"
+                            className="scroll-contain flex-1 overflow-y-auto p-6 space-y-6"
                             onScroll={(e) => {
                                 const element = e.currentTarget;
                                 const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 50;

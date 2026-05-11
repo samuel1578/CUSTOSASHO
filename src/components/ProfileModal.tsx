@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, Calendar, GraduationCap, MapPin, Phone, Sparkles, User, X } from 'lucide-react';
+import { Building2, Calendar, GraduationCap, MapPin, Phone, User, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { UNIVERSITY_ACADEMICS, SCHOOL_OPTIONS, SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
+import { setScrollLock } from '../lib/utils';
+import logo from '../assets/logo.png';
 
 const trim = (value: string) => value.trim();
 
@@ -63,6 +65,15 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         () => isEditMode || Boolean(user && !profileLoading && !profileComplete),
         [user, profileLoading, profileComplete, isEditMode]
     );
+
+    useEffect(() => {
+        if (shouldShowModal) {
+            setScrollLock(true);
+        } else {
+            setScrollLock(false);
+        }
+        return () => setScrollLock(false);
+    }, [shouldShowModal]);
 
     useEffect(() => {
         if (profile?.fullName) {
@@ -189,7 +200,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         <AnimatePresence>
             {shouldShowModal && (
                 <motion.div
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-app-base/80 backdrop-blur transition-colors"
+                    className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-app-base/80 backdrop-blur transition-colors"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -199,7 +210,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="relative w-full max-w-2xl rounded-2xl border border-border-subtle/40 bg-app-surface/90 p-8 text-text-primary shadow-2xl transition-colors"
+                        className="scroll-contain relative flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-2xl border border-border-subtle/40 bg-app-surface/90 p-6 sm:p-8 text-text-primary shadow-2xl transition-colors"
                     >
                         {isEditMode && onClose && (
                             <button
@@ -210,15 +221,19 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                             </button>
                         )}
 
-                        <div className="mb-6 flex items-start gap-4">
-                            <div className="rounded-xl bg-accent-primary/15 p-3 text-accent-primary">
-                                <Sparkles className="h-8 w-8" />
+                        <div className="mb-8 flex flex-col items-center gap-6 text-center sm:flex-row sm:items-start sm:text-left">
+                            <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-accent-primary/20 bg-white shadow-xl">
+                                <img
+                                    src={logo}
+                                    alt="CustoSasho Logo"
+                                    className="h-full w-full object-contain scale-150"
+                                />
                             </div>
-                            <div>
-                                <h2 className="text-2xl font-display font-semibold text-text-primary">
+                            <div className="flex-1">
+                                <h2 className="text-3xl font-display font-bold text-text-primary uppercase tracking-tight">
                                     {isEditMode ? 'Edit Your Profile' : 'Complete Your Profile'}
                                 </h2>
-                                <p className="mt-2 text-sm text-text-secondary">
+                                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
                                     {isEditMode
                                         ? 'Update your personal and academic information below.'
                                         : 'We need a little more information to personalize your stole experience and keep our team aligned with your graduation journey.'

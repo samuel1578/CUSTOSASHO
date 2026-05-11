@@ -3,6 +3,7 @@ import { MouseEvent, ReactNode, useEffect, useMemo, useRef } from 'react';
 import { X } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { ThemeToggle } from './ThemeToggle';
+import { setScrollLock } from '../lib/utils';
 
 interface MobileMenuItem {
     id: string;
@@ -53,7 +54,7 @@ export function MobileMenu({
 
     useEffect(() => {
         if (!isOpen) {
-            document.body.style.removeProperty('overflow');
+            setScrollLock(false);
             if (previouslyFocusedElement.current) {
                 previouslyFocusedElement.current.focus({ preventScroll: true });
             }
@@ -61,7 +62,7 @@ export function MobileMenu({
         }
 
         previouslyFocusedElement.current = document.activeElement as HTMLElement | null;
-        document.body.style.setProperty('overflow', 'hidden');
+        setScrollLock(true);
 
         const firstFocusable = panelRef.current?.querySelector<HTMLElement>(focusSelectors);
         firstFocusable?.focus({ preventScroll: true });
@@ -95,7 +96,7 @@ export function MobileMenu({
 
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
-            document.body.style.removeProperty('overflow');
+            setScrollLock(false);
         };
     }, [isOpen, focusableElements, onRequestClose]);
 
@@ -128,7 +129,7 @@ export function MobileMenu({
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ duration: 0.32, ease: [0.36, 0.66, 0.04, 1] }}
-                        className="relative flex h-full w-full flex-col bg-app-base text-text-primary transition-colors"
+                        className="scroll-contain relative flex h-[100dvh] w-full flex-col bg-app-base text-text-primary transition-colors"
                     >
                         <div className="pointer-events-none absolute inset-0 overflow-hidden">
                             <div className="absolute inset-0 bg-hero-gradient" />

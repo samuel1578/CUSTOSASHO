@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export function Footer() {
   return (
@@ -7,8 +8,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="h-6 w-6 text-accent-primary" />
+            <div className="flex items-center space-x-3">
+              <img src={logo} alt="CustoSasho Logo" className="h-10 w-10 object-contain" />
               <span className="text-xl font-display font-bold text-text-primary">CustoSasho</span>
             </div>
             <p className="text-sm text-text-secondary">

@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { saveDesignSubmission, createNNSOrder } from '../lib/appwrite';
 import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
+import { scrollToElement } from '../lib/utils';
 import blackBasePreview from '../assets/blckbse.jpg';
 import yellowBasePreview from '../assets/yellowbse.png';
 import brandLogo from '../assets/logo.png';
@@ -333,6 +334,7 @@ export function DesignerPage() {
       const validationError = validateStep();
       if (validationError) {
         setError(validationError);
+        setTimeout(() => scrollToElement('designer-error'), 100);
         return;
       }
       await handleSubmit();
@@ -342,15 +344,18 @@ export function DesignerPage() {
     const validationMessage = currentStep.id === 'welcome' ? null : validateStep();
     if (validationMessage) {
       setError(validationMessage);
+      setTimeout(() => scrollToElement('designer-error'), 100);
       return;
     }
 
     setStepIndex((prev) => Math.min(prev + 1, STEP_FLOW.length - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBack = () => {
     setError(null);
     setStepIndex((prev) => Math.max(prev - 1, 0));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async () => {
@@ -930,9 +935,9 @@ export function DesignerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-app-base pt-24 pb-16 text-text-primary transition-colors">
-      <div className="mx-auto flex h-full w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
-        <header className="mb-12 flex flex-col gap-6">
+    <div className="min-h-[100dvh] bg-app-base pt-24 pb-16 text-text-primary transition-colors">
+      <div className="mx-auto flex min-h-[calc(100dvh-10rem)] w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
+        <header className="mb-12 short:mb-6 flex flex-col gap-6 short:gap-3">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               {isNNSUser && (
@@ -940,52 +945,52 @@ export function DesignerPage() {
                   <img
                     src={nnsLogo}
                     alt="New Nation School"
-                    className="h-16 w-16 object-contain"
+                    className="h-16 w-16 short:h-12 short:w-12 object-contain"
                   />
                 </div>
               )}
               <div>
-                <h2 className="text-sm uppercase tracking-[0.35em] text-accent-primary">Design Module</h2>
-                <h1 className="mt-3 text-4xl font-display font-bold text-text-primary sm:text-5xl">
+                <h2 className="text-sm short:text-xs uppercase tracking-[0.35em] text-accent-primary">Design Module</h2>
+                <h1 className="mt-3 short:mt-1 text-4xl short:text-2xl font-display font-bold text-text-primary sm:text-5xl">
                   Custosasho Interactive Experience
                 </h1>
               </div>
             </div>
-            <div className="w-full sm:w-64">
-              <div className="h-2 rounded-full bg-app-elevated/60">
+            <div className="w-full sm:w-64 short:w-48">
+              <div className="h-2 short:h-1.5 rounded-full bg-app-elevated/60">
                 <div
                   className="h-full rounded-full btn-accent-gradient transition-all"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
-              <p className="mt-2 text-xs uppercase tracking-widest text-text-secondary/80">
+              <p className="mt-2 short:mt-1 text-xs uppercase tracking-widest text-text-secondary/80">
                 Step {stepIndex + 1} of {STEP_FLOW.length}
               </p>
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-semibold text-text-primary">{currentStep.title}</h3>
-            <p className="mt-2 max-w-3xl text-sm text-text-secondary">{currentStep.description}</p>
+            <h3 className="text-2xl short:text-xl font-semibold text-text-primary">{currentStep.title}</h3>
+            <p className="mt-2 short:mt-1 max-w-3xl text-sm short:text-xs text-text-secondary">{currentStep.description}</p>
           </div>
         </header>
 
         {error && (
-          <div className="mb-8 rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+          <div id="designer-error" className="mb-8 rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-200">
             {error}
           </div>
         )}
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-h-0 pb-24 sm:pb-0">
           <AnimatePresence mode="wait">{stepContentMap[currentStep.id]()}</AnimatePresence>
         </div>
 
-        <footer className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="sticky bottom-0 z-40 mt-auto flex flex-col gap-4 border-t border-border-subtle/20 bg-app-base/80 p-4 backdrop-blur-md -mx-4 sm:static sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:border-none sm:bg-transparent sm:p-0 sm:mx-0 sm:backdrop-blur-none">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-text-secondary/70">
             <span>Need help?</span>
             <span className="text-accent-primary">support@custosasho.com</span>
           </div>
 
-          <div className="flex items-center gap-4 self-end">
+          <div className="flex items-center gap-4 self-end sm:self-auto">
             <button
               onClick={handleBack}
               disabled={stepIndex === 0 || saving}
