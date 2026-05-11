@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, ClipboardList, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { saveDesignSubmission, createNNSOrder } from '../lib/appwrite';
 import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
@@ -10,11 +10,12 @@ import blackBasePreview from '../assets/blckbse.jpg';
 import yellowBasePreview from '../assets/yellowbse.png';
 import brandLogo from '../assets/logo.png';
 import nnsLogo from '../assets/nns.png';
+import nnsMockup from '../assets/nnsmockup.jpeg';
 import nnsMaleImage from '../assets/nnsmale.jpeg';
 import nnsFemaleImage from '../assets/nnsfem.jpeg';
 
 type StepId = 'welcome' | 'base' | 'package' | 'consent';
-type NNSStepId = 'contact' | 'brief' | 'review';
+type NNSStepId = 'guide' | 'contact' | 'brief' | 'review';
 
 interface StepDefinition {
   id: StepId | NNSStepId;
@@ -49,6 +50,11 @@ const UG_STEP_FLOW: StepDefinition[] = [
 // New Nation School flow
 const NNS_STEP_FLOW: StepDefinition[] = [
   {
+    id: 'guide',
+    title: 'Your Custom Sash Guide',
+    description: 'Read carefully before placing your order',
+  },
+  {
     id: 'contact',
     title: 'Your Information',
     description: 'Confirm your details for your custom stole order.',
@@ -56,7 +62,7 @@ const NNS_STEP_FLOW: StepDefinition[] = [
   {
     id: 'brief',
     title: 'Design Brief',
-    description: 'Share your vision and design ideas with our creative team.',
+    description: 'Provide the quote that will be embroidered on your custom sash.',
   },
   {
     id: 'review',
@@ -143,6 +149,52 @@ const PACKAGE_OPTIONS = [
   },
 ];
 
+interface NNSLayoutWrapperProps {
+  children: React.ReactNode;
+  showGuide: boolean;
+  setShowGuide: (show: boolean) => void;
+}
+
+const NNSLayoutWrapper = ({ children, showGuide, setShowGuide }: NNSLayoutWrapperProps) => (
+  <div className="flex flex-col lg:grid lg:grid-cols-[45%_55%] lg:gap-12">
+    {/* Left Panel: Guide (Desktop) or Toggle (Mobile) */}
+    <div className="space-y-6">
+      <div className="lg:hidden">
+        <button
+          onClick={() => setShowGuide(!showGuide)}
+          className="flex w-full items-center justify-between rounded-xl border border-accent-primary/30 bg-accent-primary/5 px-5 py-4 text-sm font-bold text-accent-primary transition-all hover:bg-accent-primary/10"
+        >
+          <span className="flex items-center gap-2">
+            {showGuide ? <X className="h-4 w-4" /> : <ClipboardList className="h-4 w-4" />}
+            {showGuide ? 'Hide Guide ▲' : 'View Sash Guide ▼'}
+          </span>
+        </button>
+        <div
+          className={`mt-4 overflow-hidden transition-all duration-300 ${showGuide ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+            }`}
+        >
+          <div className="rounded-2xl border border-border-subtle/50 bg-app-surface/60 p-3">
+            <img src={nnsMockup} alt="Sash Guide" className="w-full rounded-xl object-contain" />
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden lg:sticky lg:top-4 lg:block">
+        <div className="overflow-hidden rounded-2xl border border-border-subtle/50 bg-app-surface/60 p-4 shadow-xl">
+          <div className="mb-4 text-xs uppercase tracking-[0.25em] text-text-secondary/70">Sash Reference Guide</div>
+          <img src={nnsMockup} alt="Sash Guide" className="w-full rounded-xl object-contain" />
+          <p className="mt-4 text-xs font-medium text-amber-500/80">
+            Double-check all spellings. Text is embroidered in gold thread.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Right Panel: Step Content */}
+    <div className="min-w-0">{children}</div>
+  </div>
+);
+
 interface DesignerFormState {
   baseColor: string;
   packageChoice: 'standard' | 'premium';
@@ -161,7 +213,7 @@ interface DesignerFormState {
 }
 
 interface NNSFormState {
-  designBrief: string;
+  quote: string;
   selectedGender: 'male' | 'female' | '';
   contact: {
     fullName: string;
@@ -178,6 +230,10 @@ export function DesignerPage() {
   const STEP_FLOW = isNNSUser ? NNS_STEP_FLOW : UG_STEP_FLOW;
 
   const [stepIndex, setStepIndex] = useState(0);
+  const [guideRead, setGuideRead] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const guideScrollRef = useRef<HTMLDivElement>(null);
+
   const [form, setForm] = useState<DesignerFormState>({
     baseColor: '',
     packageChoice: 'standard',
@@ -195,7 +251,7 @@ export function DesignerPage() {
     },
   });
   const [nnsForm, setNnsForm] = useState<NNSFormState>({
-    designBrief: '',
+    quote: '',
     selectedGender: '',
     contact: {
       fullName: '',
@@ -205,6 +261,10 @@ export function DesignerPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+
+  useEffect(() => {
+    setShowGuide(false);
+  }, [stepIndex]);
 
   useEffect(() => {
     if (!user) {
@@ -250,6 +310,13 @@ export function DesignerPage() {
     setError(null);
   };
 
+  const handleGuideScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      setGuideRead(true);
+    }
+  };
+
   const handlePackageSelection = (value: 'standard' | 'premium', unavailable: boolean) => {
     if (unavailable) {
       setError('The premium stole is not currently in production.');
@@ -279,19 +346,19 @@ export function DesignerPage() {
           }
           break;
         case 'brief':
-          if (!nnsForm.designBrief.trim()) {
-            return 'Please provide a design brief for our creative team.';
+          if (!nnsForm.quote.trim()) {
+            return 'Please provide a quote for your sash.';
           }
           if (!nnsForm.selectedGender) {
             return 'Please select your gender to preview your stole reference image.';
           }
-          if (nnsForm.designBrief.length > 500) {
-            return 'Design brief must be less than 500 characters.';
+          if (nnsForm.quote.length > 100) {
+            return 'Sash quote must be less than 100 characters.';
           }
           break;
         case 'review':
           // Final validation
-          if (!nnsForm.contact.fullName || !nnsForm.contact.course || !nnsForm.designBrief.trim() || !nnsForm.selectedGender) {
+          if (!nnsForm.contact.fullName || !nnsForm.contact.course || !nnsForm.quote.trim() || !nnsForm.selectedGender) {
             return 'Please complete all required information.';
           }
           break;
@@ -354,6 +421,10 @@ export function DesignerPage() {
 
   const handleBack = () => {
     setError(null);
+    if (isNNSUser && stepIndex === 1) {
+      navigate('/dashboard');
+      return;
+    }
     setStepIndex((prev) => Math.max(prev - 1, 0));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -377,7 +448,8 @@ export function DesignerPage() {
           course: nnsForm.contact.course,
           graduationYear: profile?.graduationYear || undefined,
           selectedGender: nnsForm.selectedGender || undefined,
-          designBrief: nnsForm.designBrief,
+          quote: nnsForm.quote,
+          designBrief: nnsForm.quote, // Using quote as design brief
         });
 
         if (orderData) {
@@ -776,22 +848,22 @@ export function DesignerPage() {
         {/* Form Content */}
         <div className="flex-1 max-w-3xl space-y-6">
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-secondary">Design Statement</label>
-            <textarea
-              value={nnsForm.designBrief}
-              onChange={(e) => setNnsForm(prev => ({ ...prev, designBrief: e.target.value }))}
-              placeholder="Share your statement with our creative team. Examples: 'GOD DID', 'IT'S BEEN GOD', 'ALL GOD NOT ME', or describe colors, symbols, and design elements you want..."
-              rows={8}
+            <label className="mb-2 block text-sm font-medium text-text-secondary">Sash Quote</label>
+            <input
+              type="text"
+              value={nnsForm.quote}
+              onChange={(e) => setNnsForm(prev => ({ ...prev, quote: e.target.value }))}
+              placeholder="e.g. ISAIAH 8:18, GOD DID, CLASS OF 2026..."
               className="w-full rounded-lg border border-border-subtle/50 bg-app-elevated px-4 py-3 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
             />
             <p className="mt-2 text-xs text-text-secondary">
-              {nnsForm.designBrief.length}/500 characters
+              This quote will be embroidered on your sash exactly as provided. Double-check your spelling.
             </p>
           </div>
 
           <div className="rounded-xl border border-border-subtle/40 bg-app-surface/40 p-4">
             <p className="text-sm text-text-secondary">
-              <strong>Design Process:</strong> Our creative team will review your statement and create a custom design draft.
+              <strong>Design Process:</strong> Our creative team will use your quote to create a custom design draft.
               You'll receive updates via email and can request revisions before final production.
             </p>
           </div>
@@ -890,8 +962,8 @@ export function DesignerPage() {
           </div>
 
           <div className="rounded-xl border border-border-subtle/50 bg-app-surface/40 p-6">
-            <h4 className="text-sm font-medium text-text-secondary mb-2">Design Brief:</h4>
-            <p className="text-sm text-text-primary">{nnsForm.designBrief || 'No design brief provided'}</p>
+            <h4 className="text-sm font-medium text-text-secondary mb-2">Sash Quote:</h4>
+            <p className="text-sm text-text-primary font-semibold uppercase">{nnsForm.quote || 'No quote provided'}</p>
           </div>
 
           <div className="rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-4">
@@ -923,7 +995,44 @@ export function DesignerPage() {
     </motion.div>
   );
 
+  const renderNNSGuide = () => (
+    <motion.div
+      key="guide"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="mx-auto w-full max-w-4xl space-y-6"
+    >
+      <div
+        ref={guideScrollRef}
+        onScroll={handleGuideScroll}
+        className="scroll-contain max-h-[70vh] overflow-y-auto rounded-2xl border border-border-subtle/40 bg-app-surface/40 p-4"
+      >
+        <img
+          src={nnsMockup}
+          alt="Custom Sash Guide"
+          className="w-full rounded-xl object-contain"
+          onLoad={() => {
+            if (guideScrollRef.current) {
+              const { clientHeight, scrollHeight } = guideScrollRef.current;
+              if (scrollHeight <= clientHeight) {
+                setGuideRead(true);
+              }
+            }
+          }}
+        />
+      </div>
+      <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-amber-500">
+        <p className="text-sm italic">
+          ⚠️ Text is embroidered in gold thread. Double-check all spellings before submitting.
+        </p>
+      </div>
+    </motion.div>
+  );
+
   const stepContentMap: Record<string, () => JSX.Element> = isNNSUser ? {
+    guide: renderNNSGuide,
     contact: renderNNSContact,
     brief: renderNNSBrief,
     review: renderNNSReview,
@@ -981,7 +1090,17 @@ export function DesignerPage() {
         )}
 
         <div className="relative flex-1 min-h-0 pb-24 sm:pb-0">
-          <AnimatePresence mode="wait">{stepContentMap[currentStep.id]()}</AnimatePresence>
+          <AnimatePresence mode="wait">
+            <div key={currentStep.id}>
+              {isNNSUser && currentStep.id !== 'guide' ? (
+                <NNSLayoutWrapper showGuide={showGuide} setShowGuide={setShowGuide}>
+                  {stepContentMap[currentStep.id]()}
+                </NNSLayoutWrapper>
+              ) : (
+                stepContentMap[currentStep.id]()
+              )}
+            </div>
+          </AnimatePresence>
         </div>
 
         <footer className="sticky bottom-0 z-40 mt-auto flex flex-col gap-4 border-t border-border-subtle/20 bg-app-base/80 p-4 backdrop-blur-md -mx-4 sm:static sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:border-none sm:bg-transparent sm:p-0 sm:mx-0 sm:backdrop-blur-none">
@@ -1002,10 +1121,15 @@ export function DesignerPage() {
 
             <button
               onClick={handleNext}
-              disabled={saving}
+              disabled={saving || (isNNSUser && currentStep.id === 'guide' && !guideRead)}
               className="btn-accent-gradient inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-text-inverted transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
             >
-              {stepIndex === STEP_FLOW.length - 1 ? (
+              {isNNSUser && currentStep.id === 'guide' ? (
+                <>
+                  {guideRead ? 'I understand — Continue' : 'Scroll to read guide'}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : stepIndex === STEP_FLOW.length - 1 ? (
                 <>
                   {saving ? 'Saving...' : 'Save & Go to Dashboard'}
                   <CheckCircle2 className="h-4 w-4" />

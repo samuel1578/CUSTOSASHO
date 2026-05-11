@@ -356,6 +356,7 @@ type RawNNSOrderDocument = Models.Document & {
     school: string;
     graduationYear?: string | null;
     selectedGender?: 'male' | 'female' | null;
+    quote?: string | null;
     designBrief: string;
     price: number;
     status: NNSOrderStatus;
@@ -392,6 +393,7 @@ export interface NNSOrderRecord {
     school: string;
     graduationYear: string | null;
     selectedGender: 'male' | 'female' | null;
+    quote: string | null;
     designBrief: string;
     price: number;
     status: NNSOrderStatus;
@@ -427,6 +429,7 @@ export interface NNSOrderCreateInput {
     course: string;
     graduationYear?: string;
     selectedGender?: 'male' | 'female';
+    quote?: string;
     designBrief: string;
 }
 
@@ -436,6 +439,7 @@ export interface NNSOrderUpdateInput {
     course?: string;
     graduationYear?: string;
     selectedGender?: 'male' | 'female';
+    quote?: string;
     designBrief?: string;
     price?: number;
     status?: NNSOrderStatus;
@@ -492,6 +496,7 @@ const toNNSOrderRecord = (document: RawNNSOrderDocument): NNSOrderRecord => ({
     school: document.school,
     graduationYear: document.graduationYear ?? null,
     selectedGender: document.selectedGender ?? null,
+    quote: document.quote ?? null,
     designBrief: document.designBrief,
     price: document.price,
     status: document.status,
@@ -529,6 +534,7 @@ const serializeNNSOrderUpdate = (input: NNSOrderUpdateInput) => {
     if (input.course !== undefined) payload.course = input.course;
     if (input.graduationYear !== undefined) payload.graduationYear = input.graduationYear;
     if (input.selectedGender !== undefined) payload.selectedGender = input.selectedGender;
+    if (input.quote !== undefined) payload.quote = input.quote;
     if (input.designBrief !== undefined) payload.designBrief = input.designBrief;
     if (input.price !== undefined) payload.price = input.price;
     if (input.status !== undefined) payload.status = input.status;
@@ -578,6 +584,7 @@ export async function createNNSOrder(
             school: 'New Nation School',
             graduationYear: input.graduationYear ?? '',
             selectedGender: input.selectedGender ?? null,
+            quote: input.quote ?? '',
             designBrief: input.designBrief,
             price: 150,
             status: 'pending_review' as NNSOrderStatus,

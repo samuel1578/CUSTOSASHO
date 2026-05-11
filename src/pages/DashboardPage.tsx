@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ClipboardList, Palette, Plus, Shield, Edit, User, GraduationCap, Phone, Package, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTenant } from '../contexts/TenantContext';
 import { DesignSubmissionRecord, listDesignSubmissionsByUser, NNSOrderRecord, listNNSOrdersByUser, grantNNSConsent, hasNNSConsent } from '../lib/appwrite';
 import { ProfileModal } from '../components/ProfileModal';
 import { ConsentModal } from '../components/ConsentModal';
 import { StatusBadge } from '../components/StatusBadge';
-import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
 import logo from '../assets/logo.png';
 import nnsLogo from '../assets/nns.png';
 
@@ -21,8 +21,8 @@ export function DashboardPage() {
   const [hasConsent, setHasConsent] = useState(false);
   const navigate = useNavigate();
 
-  // Detect if user is from New Nation School
-  const isNNSUser = profile?.university && SIMPLE_INPUT_SCHOOLS.includes(profile.university as any);
+  const { isNSSType, isUGType, tenantConfig, tenantLoading } = useTenant();
+  const isNNSUser = isNSSType;
 
   useEffect(() => {
     loadData();
@@ -81,7 +81,7 @@ export function DashboardPage() {
     navigate(target);
   };
 
-  if (loading) {
+  if (loading || tenantLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-app-base text-text-primary transition-colors">
         <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-accent-primary"></div>
@@ -137,11 +137,19 @@ export function DashboardPage() {
                     transition={{ delay: 0.2, duration: 0.5 }}
                     className="flex-shrink-0"
                   >
-                    <img
-                      src={nnsLogo}
-                      alt="New Nation School"
-                      className="h-16 w-16 object-contain md:h-24 md:w-24"
-                    />
+                    {tenantConfig?.logoUrl ? (
+                      <img
+                        src={tenantConfig.logoUrl}
+                        alt={tenantConfig.name}
+                        className="h-16 w-16 object-contain md:h-24 md:w-24"
+                      />
+                    ) : (
+                      <img
+                        src={nnsLogo}
+                        alt="New Nation School"
+                        className="h-16 w-16 object-contain md:h-24 md:w-24"
+                      />
+                    )}
                   </motion.div>
                 )}
                 <button
@@ -313,9 +321,9 @@ export function DashboardPage() {
                       </div>
 
                       <div className="mt-6 rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-5">
-                        <p className="text-xs uppercase tracking-[0.3em] text-accent-primary">Design Brief</p>
-                        <p className="mt-3 text-sm leading-relaxed text-text-primary/90">
-                          {order.designBrief}
+                        <p className="text-xs uppercase tracking-[0.3em] text-accent-primary">Sash Quote</p>
+                        <p className="mt-2 text-lg font-bold text-text-primary uppercase tracking-wide">
+                          {order.quote || 'No quote provided'}
                         </p>
                       </div>
 

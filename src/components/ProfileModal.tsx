@@ -3,8 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, Calendar, GraduationCap, MapPin, Phone, User, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { UNIVERSITY_ACADEMICS, SCHOOL_OPTIONS, SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
+import { UNIVERSITY_ACADEMICS } from '../lib/constants';
 import { setScrollLock } from '../lib/utils';
+import { listActiveSchools, SchoolRecord } from '../lib/schools';
 import logo from '../assets/logo.png';
 
 const trim = (value: string) => value.trim();
@@ -36,14 +37,27 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
     const [phone, setPhone] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [schoolOptions, setSchoolOptions] = useState<SchoolRecord[]>([]);
+    const [schoolsLoading, setSchoolsLoading] = useState(true);
 
     const academicData = useMemo(() => UNIVERSITY_ACADEMICS, []);
 
-    const schools = useMemo(() => SCHOOL_OPTIONS, []);
+    useEffect(() => {
+        const fetchSchools = async () => {
+            setSchoolsLoading(true);
+            const activeSchools = await listActiveSchools();
+            setSchoolOptions(activeSchools);
+            setSchoolsLoading(false);
+        };
+        fetchSchools();
+    }, []);
 
     const isSimpleInputSchool = useMemo(() => {
-        return university && SIMPLE_INPUT_SCHOOLS.includes(university as any);
-    }, [university]);
+        const selectedSchoolConfig = schoolOptions.find(
+            s => s.name === university
+        );
+        return selectedSchoolConfig?.portalType === 'nss-type';
+    }, [university, schoolOptions]);
 
     const availableColleges = useMemo(() => {
         if (!university) return [];
@@ -102,7 +116,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         }
 
         // For simple input schools, clear dropdown fields and keep course field
-        if (SIMPLE_INPUT_SCHOOLS.includes(university as any)) {
+        if (isSimpleInputSchool) {
             setCollege('');
             setProgramme('');
             return;
@@ -272,11 +286,11 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
                                             className="w-full appearance-none rounded-lg border border-border-subtle/50 bg-app-elevated py-3 pl-11 pr-4 text-text-primary transition-colors focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/60"
                                         >
                                             <option value="" disabled>
-                                                Select school
+                                                {schoolsLoading ? 'Loading schools...' : 'Select school'}
                                             </option>
-                                            {schools.map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option}
+                                            {schoolOptions.map((school) => (
+                                                <option key={school.$id} value={school.name}>
+                                                    {school.name}
                                                 </option>
                                             ))}
                                         </select>

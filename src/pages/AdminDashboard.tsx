@@ -17,7 +17,8 @@ import {
   Printer,
   AlertTriangle,
   Calendar,
-  Image
+  Image,
+  Settings
 } from 'lucide-react';
 import {
   DesignSubmissionRecord,
@@ -43,8 +44,9 @@ import {
 } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 import GalleryManager from '../components/GalleryManager';
+import { SchoolManager } from '../components/admin/SchoolManager';
 
-type TabType = 'ug' | 'nns' | 'gallery';
+type TabType = 'ug' | 'nns' | 'gallery' | 'schools';
 
 const statusLabels: Record<NNSOrderStatus, string> = {
   pending_review: 'Pending Review',
@@ -320,6 +322,21 @@ export function AdminDashboard() {
                 />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('schools')}
+              className={`pb-3 sm:pb-4 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === 'schools'
+                ? 'text-accent-primary'
+                : 'text-text-secondary hover:text-text-primary'
+                }`}
+            >
+              Schools
+              {activeTab === 'schools' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary"
+                />
+              )}
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -467,6 +484,8 @@ export function AdminDashboard() {
             <div className="min-h-0 rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 backdrop-blur transition-colors">
               <GalleryManager />
             </div>
+          ) : activeTab === 'schools' ? (
+            <SchoolManager />
           ) : (
             <div className="min-h-0 rounded-xl sm:rounded-2xl border border-border-subtle/40 bg-app-surface/70 p-4 sm:p-6 lg:p-8 backdrop-blur transition-colors">
               <div className="mb-6 flex flex-col gap-4">
@@ -720,9 +739,9 @@ export function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="rounded-lg sm:rounded-xl border border-border-subtle/40 bg-app-elevated/60 p-4 sm:p-5">
-                  <p className="mb-3 sm:mb-4 text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-secondary/70">Design Brief</p>
-                  <p className="text-xs sm:text-sm text-text-primary leading-relaxed break-words">{selectedOrder.designBrief}</p>
+                <div className="rounded-lg sm:rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-4 sm:p-5">
+                  <p className="mb-2 text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-accent-primary">Sash Quote</p>
+                  <p className="text-sm sm:text-lg font-bold text-text-primary uppercase tracking-wide">{selectedOrder.quote || 'No quote provided'}</p>
                 </div>
 
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">

@@ -12,6 +12,7 @@ import {
   isUserInAdminTeam,
 } from '../lib/appwrite';
 import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
+import { TenantProvider } from './TenantContext';
 
 const isProfileComplete = (profile: ProfileRecord | null) => {
   if (!profile) {
@@ -232,7 +233,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <TenantProvider>
+        {children}
+      </TenantProvider>
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
