@@ -1,5 +1,6 @@
 import { Query, Models, ID } from 'appwrite';
 import { databases, storage } from './appwrite';
+import { SCHOOL_OPTIONS, SIMPLE_INPUT_SCHOOLS } from './constants';
 
 const appwriteDatabaseId = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const appwriteSchoolsCollectionId = import.meta.env.VITE_APPWRITE_SCHOOLS_COLLECTION_ID;
@@ -37,6 +38,28 @@ type RawSchoolDocument = Models.Document & {
     adminEmail: string;
 };
 
+const schoolSlug = (name: string) =>
+    name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+const fallbackSchoolRecords: SchoolRecord[] = SCHOOL_OPTIONS.map((name) => ({
+    $id: `fallback-${schoolSlug(name)}`,
+    slug: schoolSlug(name),
+    name,
+    portalType: SIMPLE_INPUT_SCHOOLS.includes(name as (typeof SIMPLE_INPUT_SCHOOLS)[number]) ? 'nss-type' : 'ug-type',
+    logoUrl: '',
+    primaryColor: '#000000',
+    secondaryColor: '#ffffff',
+    isActive: true,
+    orderCollectionId: '',
+    features: [],
+    adminEmail: '',
+    createdAt: '',
+    updatedAt: '',
+}));
+
 /**
  * Maps a raw Appwrite document to the SchoolRecord interface
  */
@@ -63,7 +86,7 @@ const toSchoolRecord = (doc: RawSchoolDocument): SchoolRecord => ({
 export async function listActiveSchools(): Promise<SchoolRecord[]> {
     if (!databases || !appwriteDatabaseId || !appwriteSchoolsCollectionId) {
         console.warn('Appwrite databases or configuration missing for schools');
-        return [];
+        return fallbackSchoolRecords;
     }
 
     try {
@@ -76,10 +99,11 @@ export async function listActiveSchools(): Promise<SchoolRecord[]> {
             ]
         );
 
-        return result.documents.map(toSchoolRecord);
+        const schools = result.documents.map(toSchoolRecord);
+        return schools.length > 0 ? schools : fallbackSchoolRecords;
     } catch (error) {
         console.error('Failed to list active schools:', error);
-        return [];
+        return fallbackSchoolRecords;
     }
 }
 

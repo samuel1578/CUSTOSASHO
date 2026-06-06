@@ -145,7 +145,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         }
 
         const entry = academicData[university as keyof typeof academicData];
-        const programmes: string[] = entry?.colleges?.[college as keyof typeof entry.colleges] ?? [];
+        const programmes = Array.from(entry?.colleges?.[college as keyof typeof entry.colleges] ?? []) as string[];
 
         if (programme && !programmes.includes(programme)) {
             setProgramme('');
@@ -161,7 +161,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
         if (isSimpleInputSchool) {
             requiredFields = [fullName, university, course, graduationYear, gender];
         } else {
-            requiredFields = [fullName, university, college, programme, graduationYear];
+            requiredFields = [fullName, university, college, programme, graduationYear, gender];
         }
 
         const hasEmptyField = requiredFields.some((value) => trim(value) === '');
@@ -392,7 +392,7 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
 
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-text-secondary">
-                                    Gender {isSimpleInputSchool ? '' : <span className="text-xs font-normal text-text-secondary/70">(optional)</span>}
+                                    Gender
                                 </label>
                                 <div className="relative">
                                     <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-secondary/70" />

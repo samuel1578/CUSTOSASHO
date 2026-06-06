@@ -22,7 +22,7 @@ const isProfileComplete = (profile: ProfileRecord | null) => {
   const trimValue = (value: string | null) => (value ?? '').trim();
 
   // Check basic required fields
-  const basicFields = ['fullName', 'university', 'graduationYear'];
+  const basicFields = ['fullName', 'university', 'graduationYear', 'gender'];
   const hasBasicFields = basicFields.every((field) => trimValue(profile[field as keyof ProfileRecord] as string) !== '');
 
   if (!hasBasicFields || !profile.onboardingComplete) {
@@ -33,8 +33,8 @@ const isProfileComplete = (profile: ProfileRecord | null) => {
   const isSimpleInputSchool = profile.university && SIMPLE_INPUT_SCHOOLS.includes(profile.university as any);
 
   if (isSimpleInputSchool) {
-    // For simple input schools, require course and gender fields
-    return trimValue(profile.course) !== '' && trimValue(profile.gender) !== '';
+    // For simple input schools, require course.
+    return trimValue(profile.course) !== '';
   } else {
     // For University of Ghana, require college and programme
     return trimValue(profile.college) !== '' && trimValue(profile.programme) !== '';
@@ -120,14 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return adminStatus;
     }
 
-    const seededProfile = await upsertProfile(nextUser.$id, {
-      fullName: nextUser.name ?? nextUser.email ?? null,
-      role: 'user',
-      onboardingComplete: false,
-    });
-
-    setProfile(seededProfile);
-    setProfileComplete(isProfileComplete(seededProfile));
+    setProfile(null);
+    setProfileComplete(false);
     setProfileLoading(false);
     return adminStatus;
   }, []);
