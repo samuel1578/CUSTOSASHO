@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, Calendar, GraduationCap, MapPin, Phone, User, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { UNIVERSITY_ACADEMICS } from '../lib/constants';
+import { SIMPLE_INPUT_SCHOOLS, UNIVERSITY_ACADEMICS } from '../lib/constants';
 import { setScrollLock } from '../lib/utils';
 import { listActiveSchools, SchoolRecord } from '../lib/schools';
 import logo from '../assets/logo.png';
@@ -53,11 +53,8 @@ export function ProfileModal({ isEditMode = false, onClose }: ProfileModalProps 
     }, []);
 
     const isSimpleInputSchool = useMemo(() => {
-        const selectedSchoolConfig = schoolOptions.find(
-            s => s.name === university
-        );
-        return selectedSchoolConfig?.portalType === 'nss-type';
-    }, [university, schoolOptions]);
+        return university ? SIMPLE_INPUT_SCHOOLS.includes(university as any) : false;
+    }, [university]);
 
     const availableColleges = useMemo(() => {
         if (!university) return [];
