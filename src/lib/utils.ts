@@ -178,9 +178,7 @@ export const printOrderDetails = (order: NNSOrderRecord) => {
           display: flex;
           justify-content: space-between;
         }
-        @media print { 
-          button { display: none; }
-          body { padding: 20px; }
+        @media print {
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }

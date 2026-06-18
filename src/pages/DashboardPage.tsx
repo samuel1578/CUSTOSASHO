@@ -14,6 +14,7 @@ import nnsLogo from '../assets/nns.png';
 
 export function DashboardPage() {
   const { user, profile, profileComplete, setPendingRedirect } = useAuth();
+  console.log('DashboardPage render — user:', user);
   const [submissions, setSubmissions] = useState<DesignSubmissionRecord[]>([]);
   const [nnsOrders, setNnsOrders] = useState<NNSOrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,26 +27,31 @@ export function DashboardPage() {
   const isNNSUser = isNSSType;
 
   useEffect(() => {
-    loadData();
-  }, [user]);
-
-  const loadData = async () => {
     if (!user) return;
+    console.log('useEffect fired — user.$id:', user?.$id);
 
-    try {
-      if (isNNSUser) {
+    const loadData = async () => {
+      try {
+        console.log('Calling listNNSOrdersByUser with:', user.$id);
         const orders = await listNNSOrdersByUser(user.$id);
-        setNnsOrders(orders);
-      } else {
-        const records = await listDesignSubmissionsByUser(user.$id);
-        setSubmissions(records);
+        console.log('Orders returned:', orders);
+        console.log('Orders length:', orders.length);
+        if (orders.length > 0) {
+          setNnsOrders(orders);
+        } else {
+          console.log('No NNS orders, falling back to UG');
+          const records = await listDesignSubmissionsByUser(user.$id);
+          setSubmissions(records);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadData();
+  }, [user?.$id]);
 
   // Check consent status when NNS orders change
   useEffect(() => {
@@ -65,7 +71,9 @@ export function DashboardPage() {
     try {
       await grantNNSConsent(user.$id);
       setShowConsentModal(false);
-      await loadData(); // Reload orders to get updated consent status
+      // Reload orders to get updated consent status
+      const orders = await listNNSOrdersByUser(user.$id);
+      setNnsOrders(orders);
       setHasConsent(true);
     } catch (error) {
       console.error('Error granting consent:', error);
@@ -131,7 +139,7 @@ export function DashboardPage() {
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-4">
-                {isNNSUser && (
+                {nnsOrders.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -220,7 +228,7 @@ export function DashboardPage() {
           </motion.div>
 
           {/* Consent Card for NNS Users - Only shows if they have orders */}
-          {isNNSUser && nnsOrders.length > 0 && (
+          {nnsOrders.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -264,7 +272,7 @@ export function DashboardPage() {
           )}
 
           {/* Custom Orders Section for NNS Users */}
-          {isNNSUser && (
+          {nnsOrders.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -364,7 +372,7 @@ export function DashboardPage() {
             </motion.div>
           )}
 
-          <div className={`grid grid-cols-1 gap-8 ${isNNSUser ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+          <div className={`grid grid-cols-1 gap-8 ${nnsOrders.length > 0 ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -373,15 +381,15 @@ export function DashboardPage() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-accent-primary">{isNNSUser ? 'Orders' : 'Submissions'}</p>
-                  <h2 className="mt-3 text-4xl font-bold text-text-primary">{isNNSUser ? nnsOrders.length : submissions.length}</h2>
+                  <p className="text-sm uppercase tracking-[0.3em] text-accent-primary">{nnsOrders.length > 0 ? 'Orders' : 'Submissions'}</p>
+                  <h2 className="mt-3 text-4xl font-bold text-text-primary">{nnsOrders.length > 0 ? nnsOrders.length : submissions.length}</h2>
                 </div>
                 <div className="rounded-full bg-accent-primary/15 p-3 text-accent-primary">
-                  {isNNSUser ? <Package className="h-6 w-6" /> : <ClipboardList className="h-6 w-6" />}
+                  {nnsOrders.length > 0 ? <Package className="h-6 w-6" /> : <ClipboardList className="h-6 w-6" />}
                 </div>
               </div>
               <p className="mt-6 text-sm text-text-secondary">
-                {isNNSUser
+                {nnsOrders.length > 0
                   ? 'Track your custom stole orders from submission through delivery.'
                   : 'Every saved journey appears in real time for our creative team and in your personal portal.'}
               </p>
@@ -425,7 +433,7 @@ export function DashboardPage() {
             </motion.div>
 
             {/* UG Users Data Status Card */}
-            {!isNNSUser && (
+            {submissions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -452,7 +460,7 @@ export function DashboardPage() {
           </div>
 
           {/* UG Users Design Journey Section */}
-          {!isNNSUser && (
+          {submissions.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
