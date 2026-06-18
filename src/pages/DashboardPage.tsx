@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ClipboardList, Palette, Plus, Shield, Edit, User, GraduationCap, Phone, Package, Check } from 'lucide-react';
+import { ClipboardList, Palette, Plus, Shield, Edit, User, GraduationCap, Phone, Package, Check, Printer } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { DesignSubmissionRecord, listDesignSubmissionsByUser, NNSOrderRecord, listNNSOrdersByUser, grantNNSConsent, hasNNSConsent } from '../lib/appwrite';
 import { ProfileModal } from '../components/ProfileModal';
 import { ConsentModal } from '../components/ConsentModal';
 import { StatusBadge } from '../components/StatusBadge';
+import { printOrderDetailsUser } from '../lib/utils';
 import logo from '../assets/logo.png';
 import nnsLogo from '../assets/nns.png';
 
@@ -313,6 +314,15 @@ export function DashboardPage() {
                           <p className="mt-1 text-xs text-text-secondary/70">
                             Submitted {new Date(order.submittedAt).toLocaleDateString()}
                           </p>
+                          <div className="mt-4">
+                            <button
+                              onClick={() => printOrderDetailsUser(order)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-yellow-500/40 text-yellow-300 bg-yellow-500/10 hover:bg-yellow-500/20 transition-colors"
+                            >
+                              <Printer size={13} />
+                              Print Receipt
+                            </button>
+                          </div>
                         </div>
                         <div className="rounded-xl border border-border-subtle/50 bg-app-elevated/70 px-4 py-3">
                           <p className="text-xs uppercase tracking-[0.25em] text-text-secondary/70">Price</p>
