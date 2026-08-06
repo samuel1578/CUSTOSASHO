@@ -1,3 +1,6 @@
+// Single source of truth for the active Standard Stole price (GH₵200)
+export const STANDARD_STOLE_PRICE = 200;
+
 export const PACKAGES = {
   basic: {
     name: 'Basic Stole',
@@ -17,7 +20,7 @@ export const PACKAGES = {
   },
   standard: {
     name: 'Standard Stole',
-    price: 150,
+    price: STANDARD_STOLE_PRICE,
     available: true,
     features: [
       'Black base with signature motif placement',

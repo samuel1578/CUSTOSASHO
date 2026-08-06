@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, ClipboardList, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { saveDesignSubmission, createNNSOrder } from '../lib/appwrite';
-import { SIMPLE_INPUT_SCHOOLS } from '../lib/constants';
+import { SIMPLE_INPUT_SCHOOLS, STANDARD_STOLE_PRICE } from '../lib/constants';
 import { scrollToElement } from '../lib/utils';
 import blackBasePreview from '../assets/blckbse.jpg';
 import yellowBasePreview from '../assets/yellowbse.png';
@@ -803,7 +803,7 @@ export function DesignerPage() {
 
           <div className="mt-8 rounded-xl border border-accent-primary/40 bg-accent-primary/10 p-4">
             <p className="text-sm text-text-primary">
-              <strong>Custom Stole Price:</strong> ¢150.00 (same as standard package)
+              <strong>Custom Stole Price:</strong> ¢{STANDARD_STOLE_PRICE.toFixed(2)} (same as standard package)
             </p>
           </div>
         </div>
@@ -956,7 +956,7 @@ export function DesignerPage() {
               </div>
               <div className="border-t border-border-subtle/30 pt-3 flex justify-between font-semibold">
                 <span className="text-text-primary">Total:</span>
-                <span className="text-accent-primary">¢150.00</span>
+                <span className="text-accent-primary">¢{STANDARD_STOLE_PRICE.toFixed(2)}</span>
               </div>
             </div>
           </div>

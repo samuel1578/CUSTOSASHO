@@ -1,4 +1,5 @@
 import { Account, Client, Databases, ID, Models, Query, Teams, Storage } from 'appwrite';
+import { STANDARD_STOLE_PRICE } from './constants';
 
 const appwriteEndpoint = import.meta.env.VITE_APPWRITE_ENDPOINT;
 const appwriteProjectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
@@ -586,7 +587,7 @@ export async function createNNSOrder(
             selectedGender: input.selectedGender ?? null,
             quote: input.quote ?? '',
             designBrief: input.designBrief,
-            price: 150,
+            price: STANDARD_STOLE_PRICE,
             status: 'pending_review' as NNSOrderStatus,
             statusHistory: JSON.stringify([initialStatusHistory]),
             submittedAt: now,

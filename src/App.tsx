@@ -16,6 +16,7 @@ import { GalleryPage } from './pages/GalleryPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { ProfileModal } from './components/ProfileModal';
+import { WhatsAppButton } from './components/WhatsAppButton';
 
 function PageWrapper({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -74,6 +75,7 @@ function AppContent() {
         </Routes>
       </PageWrapper>
       <ProfileModal />
+      <WhatsAppButton />
       <Footer />
     </div>
   );
