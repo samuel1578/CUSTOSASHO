@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
 
-const WHATSAPP_URL = 'https://wa.me/233505684527';
+const WHATSAPP_URL = 'https://wa.me/message/BKQJRKJBDYJBD1';
 
 // One gentle pulse cycle every ~2.5 seconds
 const PULSE_DURATION = 2.5;
